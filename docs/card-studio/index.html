@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data: https://raw.githubusercontent.com; connect-src 'self' https://api.github.com; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <title>Card Artwork Studio | Massive Exploding Kittens</title>
+  <meta name="description" content="Biên tập bộ ảnh và tần suất xuất hiện của card trong Massive Exploding Kittens qua GitHub.">
+  <link rel="stylesheet" href="./studio.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand">
+      <span class="brand-symbol" aria-hidden="true">✳</span>
+      <div><div class="brand-kicker">MASSIVE EXPLODING KITTENS / TOOLS</div>
+        <h1>Card <em>Artwork</em> Studio<span class="brand-dot">.</span></h1></div>
+    </div>
+    <a class="external" href="https://github.com/hyu276/Hyu-Fangame.Massive-Exploding-Kittens/pull/1" rel="noopener noreferrer" target="_blank">Mã nguồn / PR #1 ↗</a>
+  </header>
+
+  <main>
+    <section class="hero" aria-label="Thông tin hệ thống">
+      <div class="hero-copy">
+        <div class="eyebrow">XƯỞNG QUẢN LÝ ARTWORK · GITHUB PAGES ONLY</div>
+        <h2>Mỗi lá bài.<br><span>Một lựa chọn hình ảnh.</span></h2>
+        <p>Phân bổ một bộ ảnh cho nhiều bản sao của cùng loại thẻ. Chỉnh sửa số lần xuất hiện, kiểm tra từng ô, rồi ghi trực tiếp vào GitHub.</p>
+        <div class="meta-line"><span>01 / CHỌN LOẠI BÀI</span><span>02 / ĐIỀU CHỈNH ẢNH</span><span>03 / COMMIT MAIN</span></div>
+      </div>
+      <aside class="connection-panel">
+        <div class="panel-top"><span class="eyebrow">KẾT NỐI REPOSITORY</span><span id="connection" data-connected="false" class="connection-state">Chế độ xem</span></div>
+        <div class="repo-name">hyu276 / <strong>Hyu-Fangame.Massive-Exploding-Kittens</strong></div>
+        <label class="field-label" for="token">Fine-grained GitHub token <small>Contents: Read and write</small></label>
+        <div class="auth-row">
+          <input id="token" type="password" spellcheck="false" autocomplete="off" autocapitalize="none" placeholder="github_pat_..." aria-describedby="tokenHelp">
+          <button type="button" id="connect" class="button gold">Kết nối</button>
+        </div>
+        <p id="tokenHelp" class="security-note">Token chỉ giữ trong bộ nhớ trang, không lưu trên GitHub Pages hoặc trình duyệt. Dùng token giới hạn đúng repository này và quyền Contents.</p>
+        <div class="connection-actions">
+          <button type="button" id="disconnect" class="link-button">Ngắt kết nối</button>
+          <button type="button" id="reload" class="link-button">↻ Nạp lại từ GitHub</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="status-strip" aria-label="Trạng thái">
+      <span><b class="status-square" aria-hidden="true"></b> NHÁNH ĐÍCH: <strong>main</strong></span>
+      <span>REVISION: <strong id="revision">...</strong></span>
+      <span>THAY ĐỔI CHƯA LƯU: <strong id="changedCount">0</strong> loại bài</span>
+      <span class="status-pages">EDITOR: GITHUB PAGES, KHÔNG CÓ TRONG NETLIFY BUILD</span>
+    </section>
+    <div id="notice" data-kind="success" class="notice" role="status" aria-live="polite">Đang tải danh mục artwork...</div>
+
+    <div class="layout">
+      <aside class="catalog">
+        <div class="catalog-top"><div class="eyebrow">DANH MỤC BÀI</div><h2>Thư viện</h2></div>
+        <label class="search-label" for="search">TÌM LOẠI BÀI</label>
+        <input id="search" type="search" placeholder="Ví dụ: exploding_kitten">
+        <nav id="typeList" class="type-list" aria-label="Các loại bài"></nav>
+        <div class="add-category">
+          <label class="search-label" for="newTypeName">THÊM LOẠI BÀI</label>
+          <input id="newTypeName" type="text" pattern="[a-z0-9_]+" placeholder="ten_la_bai">
+          <button id="newType" type="button" class="button secondary">+ Tạo loại bài</button>
+          <p class="muted">Chỉ tạo danh mục hình ảnh, không tự thêm cơ chế gameplay hoặc loại bài mới vào engine.</p>
+        </div>
+      </aside>
+
+      <section class="editor" aria-labelledby="editorTitle">
+        <div class="editor-top">
+          <div><div class="eyebrow">IMAGE ASSIGNMENT WORKBENCH</div><h2 id="editorTitle">Bàn phân bổ artwork</h2></div>
+          <div class="legend"><span class="legend-dot"></span> Không thay đổi logic của lá bài</div>
+        </div>
+        <div id="workspace" class="workspace"><p class="empty">Đang khởi tạo workspace...</p></div>
+        <div class="editor-footer">
+          <div>
+            <strong id="weightStatus">Chưa chọn loại bài</strong>
+            <p>Lưu ảnh và ánh xạ thành một commit. Chỉ file game được Netlify build, không gồm editor.</p>
+          </div>
+          <button type="button" id="save" class="button save-button" disabled>Commit thay đổi lên GitHub ↗</button>
+        </div>
+      </section>
+    </div>
+    <footer class="footnote"><span>FANGAME ARTWORK PIPELINE / CONTENTS API</span><span>Ảnh mới được sử dụng sau khi Netlify triển khai phiên bản game mới.</span></footer>
+  </main>
+</body>
+</html>

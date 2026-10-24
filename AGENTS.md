@@ -179,3 +179,20 @@ Running the project requires two concurrent processes:
 ---
 
 *This guide is the single source of truth for repository architecture, cache optimization, and code quality. Always uphold these standards when developing.*
+
+---
+
+## 7. Card Artwork Studio: GitHub Pages ONLY, strict no-Netlify boundary
+
+This is a mandatory deployment and architecture rule, not a preference.
+
+1. **Never deploy the Card Artwork Studio UI to Netlify under any circumstances.** The only authorized hosting surface for the editor is GitHub Pages at `docs/card-studio/` (project path: `/Hyu-Fangame.Massive-Exploding-Kittens/card-studio/`). Do not create Netlify redirect/rewrite rules for the editor, place it in `public/`, include it in the Vite client `dist/`, add it to Netlify Functions/Edge Functions or publish it from any Netlify site. Do not add "temporarily" exposed Netlify preview routes.
+2. The public **game** continues to be built and deployed by Netlify from Vite's `dist/`. Artwork files placed under `public/assets/cards/` and the visual map `src/client/data/card-artwork-map.json` are explicitly part of the game; these must reach the game site after its next **authorized main deployment**. Distinguish **publishing game assets to Netlify** (required) from **deploying the editor UI to Netlify** (forbidden).
+3. GitHub Pages must publish this editor only via the repository `main` branch `/docs` folder. GitHub Pages configuration is managed at Settings → Pages and cannot be assumed to be enabled. Do not change the Pages source to `/public` or Vite `dist`.
+4. All art is stored in the SAME repository under `public/assets/cards/<safe_card_slug>/<safe_image_filename>`. The editor writes a **single atomic GitHub commit** containing image files and `src/client/data/card-artwork-map.json`. New custom artworks may be reused across multiple physical copies. `card.index` remains gameplay-only; artwork distribution uses `artworkSlot` and the map's `slots` array. Avoid hard-coding additional artwork counts into new card UI.
+5. Tokens must **never be committed, logged, persisted, forwarded to Netlify, displayed in URLs, saved in localStorage/sessionStorage/cookies, or embedded in built assets**. The editor accepts a **fine-grained GitHub PAT** scoped to this single repository with **Contents: Read and write**. Keep the token in volatile JS memory only; send it only to `https://api.github.com`, and forget it on disconnect/page unload. Never load third-party scripts in the editor.
+6. Validate image bytes, extensions, size, safe filename, card slug, existing mappings, and current Git commit SHA before writes. Reject SVG and HTML images, do not allow arbitrary URL ingestion, and reject conflicts rather than overwriting newer commits. Ensure image cache changes are invalidated only for affected card types.
+7. Exclude editor files from Netlify output in every future migration/build refactor. Add automated checks to fail if `dist/card-studio` or `dist/docs/card-studio` exists. Never create a Netlify build plugin or bundling path that copies the editor into `dist/`. `npm run build` must continue to emit only game UI and its assets.
+8. Never auto-merge a PR or change the hosting boundary without explicit owner authorization. Preserve editor functionality on GitHub Pages and game artwork on Netlify when updating infrastructure.
+
+The editor is a **public static page** and cannot protect against a compromised browser, malicious extensions, or another person controlling the served JavaScript. Least-privilege tokens and careful review are required. A new visual card category does not automatically create gameplay logic for a new card type.
