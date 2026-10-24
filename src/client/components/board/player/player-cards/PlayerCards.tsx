@@ -5,6 +5,7 @@ import {useGame} from "../../../../context/GameContext.tsx";
 
 export interface CardWithServerIndex extends ICard {
   serverIndex: number;
+  type?: any;
 }
 
 interface PlayerCardsProps {
@@ -26,7 +27,9 @@ export default function PlayerCards({
     ...card,
     serverIndex: index
   }));
-  const hand = sortCards(cardsWithIndices) as CardWithServerIndex[];
+  const hand = game.isSpectator || !game.isSelfAlive
+    ? cardsWithIndices
+    : sortCards(cardsWithIndices) as CardWithServerIndex[];
 
   return (
     <div className="player-cards">

@@ -12,15 +12,18 @@ export default function DeadOverlay() {
     return null;
   }
 
+  const isZombieKittens = game.selectedDecks?.includes('zombie_kittens');
+
   return (
     <div className="dead-overlay">
       <div className="dead-overlay-content">
         <h1 className="dead-overlay-title">
-          <span className="dead-overlay-icon">💥</span>
-          You exploded
+          <span className="dead-overlay-icon">{isZombieKittens ? '🧟' : '💥'}</span>
+          {isZombieKittens
+            ? 'Bạn đã thành Zombie! Vẫn giữ bài và có thể đánh lá NOW hoặc Zombie Kitten để hồi sinh!'
+            : 'Bạn đã bị nổ tung!'}
         </h1>
       </div>
     </div>
   );
 }
-

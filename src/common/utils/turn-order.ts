@@ -3,7 +3,11 @@ import {TheGame} from "../entities/game";
 
 export const findNextAlivePlayer = (game: TheGame, startPos: number): number | undefined => {
   const numPlayers = game.players.playerCount;
-  let currentPos = startPos % numPlayers;
+  if (numPlayers === 0) return undefined;
+
+  const isReversed = game.gameState?.isReversed ?? false;
+  const step = isReversed ? -1 : 1;
+  let currentPos = ((startPos % numPlayers) + numPlayers) % numPlayers;
 
   // Check all players once to avoid infinite loops
   for (let i = 0; i < numPlayers; i++) {
@@ -13,7 +17,7 @@ export const findNextAlivePlayer = (game: TheGame, startPos: number): number | u
       return currentPos;
     }
 
-    currentPos = (currentPos + 1) % numPlayers;
+    currentPos = (((currentPos + step) % numPlayers) + numPlayers) % numPlayers;
   }
 
   // No alive players found
@@ -22,7 +26,7 @@ export const findNextAlivePlayer = (game: TheGame, startPos: number): number | u
 
 export const turnOrder = {
   first: (context: IContext): number => {
-    const game = new TheGame(context)
+    const game = new TheGame(context);
 
     const nextAlive = findNextAlivePlayer(game, 0);
     // Fallback to first player if no one is alive (shouldn't happen)
@@ -30,22 +34,24 @@ export const turnOrder = {
   },
 
   /**
-   * Get the next alive player, considering turnsRemaining counter
-   * Note: We only read turnsRemaining here, the decrement happens in turn.onEnd
+   * Get the next alive player, considering turnsRemaining counter and isReversed direction
    */
   next: (context: IContext): number | undefined => {
-    const game = new TheGame(context)
+    const game = new TheGame(context);
 
-    // If there are still turns remaining (> 1 because we check before decrement), stay with the current player
     const playOrderPos = game.turnManager.playOrderPos;
-    if (game.turnManager.turnsRemaining > 1) {
+    const currentTurnPlayer = game.players.currentPlayer;
+
+    // Only stay with the current player if they are still alive!
+    if (currentTurnPlayer && currentTurnPlayer.isAlive && game.turnManager.turnsRemaining > 0) {
       return playOrderPos;
     }
 
+    // This callback receives frozen state. Elimination resets extra turns in Player.eliminate().
 
-    // Move to the next alive player
-    // return findNextAlivePlayer(ctx, player.state, ctx.playOrderPos + 1);
-    return findNextAlivePlayer(game, playOrderPos + 1);
+    const isReversed = game.gameState?.isReversed ?? false;
+    const step = isReversed ? -1 : 1;
+    return findNextAlivePlayer(game, playOrderPos + step);
   },
 
   /**

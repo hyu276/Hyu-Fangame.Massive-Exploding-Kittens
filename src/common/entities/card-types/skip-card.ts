@@ -9,6 +9,11 @@ export class SkipCard extends CardType {
   }
 
   onPlayed(game: TheGame, _card: Card) {
+    const multiplier = game.gameState.comboMultiplier || 1;
+    if (multiplier > 1 && game.turnManager.turnsRemaining > 1) {
+      game.turnManager.turnsRemaining = Math.max(1, game.turnManager.turnsRemaining - (multiplier - 1));
+    }
+    game.gameState.comboMultiplier = 1;
     game.turnManager.endTurn();
   }
 

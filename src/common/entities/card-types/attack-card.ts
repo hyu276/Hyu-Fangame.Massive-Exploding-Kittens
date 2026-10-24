@@ -13,15 +13,13 @@ export class AttackCard extends CardType {
     const { turnManager } = game;
     const { ctx } = game.context;
 
-    // Add 3 to turnsRemaining for proper 2, 4, 6, 8 stacking
-    // Formula: current + 2 (attack bonus) + 1 (compensate for onEnd decrement)
-    // Example: turnsRemaining = 1 → 4, after onEnd = 3, next player takes 2 turns
-    // Stacking: turnsRemaining = 2 → 5, after onEnd = 4, next player takes 4 turns (2+2)
-    const remaining = turnManager.turnsRemaining;
-    turnManager.turnsRemaining = remaining + 3;
+    const multiplier = game.gameState.comboMultiplier || 1;
+    turnManager.addAttackTurns(2 * multiplier);
+    game.gameState.comboMultiplier = 1;
 
     // End turn and force move to next alive player
-    const nextPlayerIndex = findNextAlivePlayer(game, ctx.playOrderPos + 1);
+    const step = game.gameState?.isReversed ? -1 : 1;
+    const nextPlayerIndex = findNextAlivePlayer(game, ctx.playOrderPos + step);
 
     if (nextPlayerIndex !== undefined) {
       turnManager.endTurn({ next: turnManager.playOrder[nextPlayerIndex] });

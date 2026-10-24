@@ -38,7 +38,7 @@ export class CardHolder {
 
   getCardAt(index: number): Card | null {
     const cards = this._getRawCards();
-    if (index < 0 || index >= cards.length) return null;
+    if (!Number.isInteger(index) || index < 0 || index >= cards.length) return null;
     return new Card(this.game, cards[index]);
   }
 
@@ -52,20 +52,20 @@ export class CardHolder {
   }
 
   addCard(card: Card | ICard): void {
-    const cardData: ICard = { id: card.id, name: card.name, index: card.index };
+    const cardData: ICard = { id: card.id, name: card.name, index: card.index, isMarked: card.isMarked, isFaceUp: card.isFaceUp, isLocked: card.isLocked };
     this._getRawCards().push({ ...cardData });
     this.onUpdate?.();
   }
 
   insertCard(card: Card | ICard, index: number): void {
-    const cardData: ICard = { id: card.id, name: card.name, index: card.index };
+    const cardData: ICard = { id: card.id, name: card.name, index: card.index, isMarked: card.isMarked, isFaceUp: card.isFaceUp, isLocked: card.isLocked };
     this._getRawCards().splice(index, 0, { ...cardData });
     this.onUpdate?.();
   }
 
   removeCardAt(index: number): Card | undefined {
     const cards = this._getRawCards();
-    if (index < 0 || index >= cards.length) return undefined;
+    if (!Number.isInteger(index) || index < 0 || index >= cards.length) return undefined;
     const [card] = cards.splice(index, 1);
     this.onUpdate?.();
     return new Card(this.game, card);
@@ -99,6 +99,15 @@ export class CardHolder {
   shuffle(): void {
     const cards = this._getRawCards();
     this.setCards(this.game.random.Shuffle(cards));
+    this.onUpdate?.();
+  }
+
+  swap(indexA: number, indexB: number): void {
+    const cards = this._getRawCards();
+    if (!Number.isInteger(indexA) || !Number.isInteger(indexB) || indexA < 0 || indexA >= cards.length || indexB < 0 || indexB >= cards.length) return;
+    const temp = cards[indexA];
+    cards[indexA] = cards[indexB];
+    cards[indexB] = temp;
     this.onUpdate?.();
   }
 }

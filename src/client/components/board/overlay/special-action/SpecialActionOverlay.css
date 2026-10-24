@@ -5,20 +5,31 @@
   transform: translateX(-50%) translateY(-50%);
   z-index: 9;
   pointer-events: none;
+  max-width: 90vw;
+  width: max-content;
 }
 
 .selection-message {
   background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
   color: var(--color-text-light);
-  padding: calc(var(--scale) * 2) calc(var(--scale) * 2);
-  border-radius: calc(var(--scale) * 2);
-  border: calc(var(--scale) * 0.4) solid var(--color-accent-dark);
+  padding: 0.75rem 1.25rem;
+  border-radius: 14px;
+  border: 2px solid var(--color-accent-dark);
   box-shadow: 0 4px 16px var(--color-accent-glow-medium),
               0 0 30px var(--color-accent-glow-light);
-  font-size: calc(var(--scale) * 3);
+  font-size: clamp(0.9rem, 2.5vw, 1.25rem);
   font-weight: bold;
   text-align: center;
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .selection-message {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    line-height: 1.3;
+  }
 }
 
 @keyframes pulse-glow {

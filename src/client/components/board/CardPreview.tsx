@@ -2,9 +2,12 @@ import {createPortal} from 'react-dom';
 import {useEffect, useState, CSSProperties, RefObject} from 'react';
 import './player/card/Card.css';
 import {useResponsive} from "../../context/ResponsiveContext.tsx";
+import CardInfoBox from './CardInfoBox';
+import SimulatedCard, { isCardSimulated } from './player/card/SimulatedCard';
 
 interface HoverCardPreviewProps {
   // Common props
+  card?: { name: string; index?: number } | string | null;
   cardImage: string;
   isVisible: boolean;
   
@@ -20,17 +23,21 @@ interface HoverCardPreviewProps {
 }
 
 export default function CardPreview({
+  card,
   cardImage, 
   anchorRef, 
   isVisible,
   canPlay = false,
-  actionLabel = "Play Card",
+  actionLabel = "Đánh thẻ này",
   onAction,
   onClose
 }: HoverCardPreviewProps) {
   const { isMobile } = useResponsive();
 
   const [showOnLeft, setShowOnLeft] = useState(false);
+
+  const cardName = typeof card === 'string' ? card : card?.name;
+  const isSimulated = isCardSimulated(cardName);
 
   useEffect(() => {
     // Only calculate position for desktop
@@ -40,15 +47,12 @@ export default function CardPreview({
       const viewportCenterX = window.innerWidth / 2;
       const viewportWidth = window.innerWidth;
 
-      // Calculate if there's enough space to show preview on the right
-      // Preview width is approximately 40 scale units = 40vw (in worst case)
       const previewWidth = Math.min(40 * (viewportWidth / 100), 40 * (window.innerHeight / 100));
       const tableRadius = Math.min(45 * (viewportWidth / 100), 45 * (window.innerHeight / 100));
       const rightEdgeOfTable = viewportCenterX + tableRadius;
       const spaceOnRight = viewportWidth - rightEdgeOfTable;
 
-      // Show on left only if: opponent card and not enough space on right
-      const notEnoughSpaceOnRight = spaceOnRight < (previewWidth + 20); // 20px padding
+      const notEnoughSpaceOnRight = spaceOnRight < (previewWidth + 20);
       const isOnRightSide = cardCenterX > viewportCenterX;
 
       setShowOnLeft(isOnRightSide && notEnoughSpaceOnRight);
@@ -63,22 +67,26 @@ export default function CardPreview({
       <div 
         className="card-preview-mobile-overlay"
         onClick={(e) => {
-         // Clicking background cancels
          e.stopPropagation();
          if (onClose) onClose();
       }}>
         
         <div 
-          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
+          onClick={(e) => e.stopPropagation()}
           className="card-preview-mobile-content"
         >
-           {/* Card Preview Image */}
+           {/* Card Preview Image or Simulated Card */}
            <div 
              className="card-preview-mobile-image card-preview"
              style={{
-               backgroundImage: `url(${cardImage})`,
+               backgroundImage: isSimulated ? 'none' : `url(${cardImage})`,
              }} 
-           />
+           >
+             {isSimulated && card && <SimulatedCard card={card} />}
+           </div>
+
+           {/* Card Info Box tiếng Việt */}
+           {card && <CardInfoBox card={card} className="mobile-card-info" />}
 
           <div className="card-preview-mobile-actions">
             {canPlay && onAction && (
@@ -100,7 +108,7 @@ export default function CardPreview({
                }}
                className="card-preview-cancel-btn"
             >
-              {canPlay ? "Cancel" : "Close"}
+              {canPlay ? "Hủy" : "Đóng"}
             </button>
           </div>
         </div>
@@ -112,12 +120,17 @@ export default function CardPreview({
   // Render Desktop Overlay
   return createPortal(
     <div className={`card-preview-overlay ${showOnLeft ? 'show-left' : 'show-right'}`}>
-      <div
-        className="card-preview"
-        style={{
-          backgroundImage: `url(${cardImage})`,
-        } as CSSProperties}
-      />
+      <div className="card-preview-desktop-wrapper">
+        <div
+          className="card-preview"
+          style={{
+            backgroundImage: isSimulated ? 'none' : `url(${cardImage})`,
+          } as CSSProperties}
+        >
+          {isSimulated && card && <SimulatedCard card={card} />}
+        </div>
+        {card && <CardInfoBox card={card} className="desktop-card-info" />}
+      </div>
     </div>,
     document.body
   );

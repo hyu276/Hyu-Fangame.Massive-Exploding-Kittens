@@ -68,19 +68,22 @@ export class Piles {
       return;
     }
 
-    // Check if the timer has expired
     if (Date.now() < pendingCardPlay.expiresAtMs) {
       return;
     }
 
+    const playedBy = pendingCardPlay.playedBy;
     this.pendingCard = null;
 
     const card = new Card(this.game, pendingCardPlay.card);
     card.type.cleanupPendingState(this.game);
 
     if (!pendingCardPlay.isNoped) {
+      (this.game.context.G as any).lastPendingPlayedBy = playedBy;
       card.play();
+      (this.game.context.G as any).lastPendingPlayedBy = null;
+    } else {
+      this.game.gameState.comboMultiplier = 1;
     }
   }
 }
-

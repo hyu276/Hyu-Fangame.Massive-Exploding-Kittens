@@ -12,7 +12,7 @@ export const Chat = () => {
   const { matchDetails } = useMatchDetails();
 
   const playerNames = matchDetails?.players.reduce((acc, p) => {
-    acc[p.id.toString()] = p.name || `Player ${p.id}`;
+    acc[p.id.toString()] = p.name || `Người chơi ${p.id}`;
     return acc;
   }, {} as Record<string, string>) || {};
 
@@ -63,17 +63,17 @@ export const Chat = () => {
       {isOpen && (
         <div className="chat-window">
           <div className="chat-header">
-            <h3>Match Chat</h3>
+            <h3>Trò chuyện</h3>
             <button className="chat-close-btn" onClick={() => setIsOpen(false)}>×</button>
           </div>
           
           <div className="chat-messages">
             {chatMessages.length === 0 ? (
-              <div className="chat-empty">No messages yet...</div>
+              <div className="chat-empty">Chưa có tin nhắn nào...</div>
             ) : (
               chatMessages.map((msg) => {
                 const isSelf = msg.sender === playerId;
-                const senderName = playerNames[msg.sender] || `Player ${msg.sender}`;
+                const senderName = playerNames[msg.sender] || `Người chơi ${msg.sender}`;
                 return (
                   <div key={msg.id} className={`chat-message ${isSelf ? 'self' : 'other'}`}>
                     <div className="message-content">
@@ -92,7 +92,7 @@ export const Chat = () => {
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder={playerId ? "Type a message..." : "Spectators can't chat"}
+              placeholder={playerId ? "Nhập tin nhắn..." : "Khán giả không thể nhắn tin"}
               disabled={!playerId}
               className="chat-input"
             />
@@ -103,7 +103,7 @@ export const Chat = () => {
         </div>
       )}
 
-      <button className="chat-toggle-btn" onClick={toggleChat} aria-label="Toggle Chat">
+      <button className="chat-toggle-btn" onClick={toggleChat} aria-label="Bật/Tắt Trò chuyện">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>

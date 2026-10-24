@@ -146,3 +146,57 @@
   gap: 0.5rem;
 }
 
+
+.btn-copy-link-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy-link-pill:hover {
+  background: #f59e0b;
+  color: #0f172a;
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .match-card {
+    padding: 0.85rem;
+    gap: 0.6rem;
+  }
+
+  .match-card-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .match-card-left {
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .match-card-actions {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .match-card-actions button {
+    flex: 1;
+    min-height: 44px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+}

@@ -1,33 +1,20 @@
 services:
-  client:
+  app:
     build:
       context: .
-      args:
-        - VITE_API_URL=https://exploding-kittens-api.svrt.dev
-        - VITE_HOST=0.0.0.0
-        - VITE_PORT=5173
-        - VITE_ALLOWED_HOSTS=exploding-kittens.svrt.dev,localhost,boom.svrt.dev
-    container_name: exploding-kittens-client
-    ports:
-      - "5173:5173"
-    networks:
-      - proxy
-    restart: unless-stopped
-    env_file:
-      - stack.env
-
-  server:
-    build: .
-    container_name: exploding-kittens-server
+      dockerfile: Dockerfile
+    container_name: exploding-kittens-app
     ports:
       - "51399:51399"
-    command: npm run server
-    networks:
-      - proxy
+    environment:
+      - NODE_ENV=production
+      - PORT=51399
+      - SERVER_ORIGINS=*
+      - FLATFILE_DIR=/app/storage/data
+    volumes:
+      - ./storage:/app/storage
     restart: unless-stopped
-    env_file:
-      - stack.env
 
 networks:
-  proxy:
-    external: true
+  default:
+    driver: bridge

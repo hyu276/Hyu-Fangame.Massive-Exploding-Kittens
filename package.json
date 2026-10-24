@@ -7,18 +7,26 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test:bots": "tsx --test tests/bots.test.ts tests/bot-improvements.test.ts",
+    "test": "tsx --test tests/bots.test.ts tests/bot-improvements.test.ts tests/game-audit.test.ts tests/game-modes.test.ts tests/game-mode-selection.test.ts tests/board-game.test.ts tests/now-cards.test.ts",
+    "test:server": "npm run build:server && tsx --test tests/server-audit.test.ts",
     "server": "npm run build:server && node dist/server/server/server.js",
-    "server:dev": "nodemon --watch src/server --watch src/common --ext ts --exec \"npm run server\"",
-    "build:server": "tsc -p src/server/tsconfig.json"
+    "server:dev": "tsx watch --include \"src/server/**/*.ts\" --include \"src/common/**/*.ts\" scripts/dev-server.ts",
+    "build:server": "tsc -p src/server/tsconfig.json",
+    "deploy:cloudflare": "wrangler deploy"
   },
   "dependencies": {
     "boardgame.io": "^0.50.2",
     "esm": "^3.2.25",
+    "koa-static": "^5.0.0",
+    "node-persist": "^3.1.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@cloudflare/containers": "^0.3.7",
     "@eslint/js": "^9.36.0",
+    "@types/koa-static": "^4.0.4",
     "@types/node": "^24.10.1",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
@@ -28,10 +36,21 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
-    "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vite": "^7.1.7"
+    "typescript-eslint": "^8.72.0",
+    "vite": "^7.1.7",
+    "wrangler": "^4.151.3"
+  },
+  "overrides": {
+    "ws@<8": "7.5.13",
+    "cookie@<0.7.0": "0.7.2",
+    "@koa/cors": "5.0.0",
+    "esbuild": "0.28.2",
+    "koa-socket-2": {
+      "socket.io": "4.8.3"
+    },
+    "socket.io-parser@>=4 <5": "4.2.7"
   }
 }

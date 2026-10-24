@@ -3,7 +3,7 @@ import type {DeckType} from '../entities/deck-type';
 import {cardTypeRegistry} from "../registries/card-registry";
 import {CardType} from "../entities/card-type";
 import {TheGame} from "../entities/game";
-import {NAME_EXPLODING_KITTEN} from "../constants/cards";
+import {NAME_EXPLODING_KITTEN, NAME_STREAKING_KITTEN} from "../constants/cards";
 
 export const createPlayerState = (): IPlayer => ({
   hand: [],
@@ -18,12 +18,29 @@ const createFullPlayerView = (player: IPlayer): IPlayer => player;
 
 /**
  * Create a limited view of a player (used for opponent views)
- * Show exploding kittens but remove the other cards
+ * Show marked cards and unprotected exploding kittens, but keep other cards and streaking-protected exploding kittens secret.
  */
-const createLimitedPlayerView = (player: IPlayer): IPlayer => ({
-  ...player,
-  hand: player.hand.filter(c => c.name === NAME_EXPLODING_KITTEN)
-});
+const createLimitedPlayerView = (player: IPlayer): IPlayer => {
+  const hasStreakingKitten = player.hand.some(c => c.name === NAME_STREAKING_KITTEN);
+  let protectedKittenHidden = false;
+
+  return {
+    ...player,
+    hand: player.hand.filter(c => {
+      if (c.isMarked) {
+        return true;
+      }
+      if (c.name === NAME_EXPLODING_KITTEN) {
+        if (hasStreakingKitten && !protectedKittenHidden) {
+          protectedKittenHidden = true;
+          return false;
+        }
+        return true;
+      }
+      return false;
+    })
+  };
+};
 
 /**
  * Check if the viewing player should see all card-types (spectator or dead player)
@@ -59,9 +76,14 @@ export const filterPlayerView = (game: TheGame): IPlayers => {
 
   const view: IPlayers = {};
   const viewingPlayerId = game.context.playerID;
+  const spectator = !viewingPlayerId || game.gameState.deadPlayers.includes(viewingPlayerId);
+  const defense = game.gameState.handShuffleDefense;
   game.players.allPlayers.forEach(value => {
     const id = value.id;
-    const pdata = game.players.getPlayer(id)._state;
+    const current = game.players.getPlayer(id).state;
+    const pdata = spectator && defense?.targetPlayerId === id && defense.spectatorHand
+      ? { ...current, hand: defense.spectatorHand }
+      : current;
     if (canSeeAllCards || id === viewingPlayerId) {
       view[id] = createFullPlayerView(pdata);
     } else {

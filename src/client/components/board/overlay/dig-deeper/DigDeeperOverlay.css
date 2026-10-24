@@ -1,0 +1,161 @@
+.dig-deeper-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+}
+
+.dig-deeper-content {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border: 2px solid #38bdf8;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 480px;
+  width: 90%;
+  max-height: 92dvh;
+  overflow-y: auto;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.25);
+  animation: digFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes digFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.dig-deeper-content h2 {
+  font-size: 1.6rem;
+  color: #38bdf8;
+  margin-bottom: 8px;
+}
+
+.dig-deeper-content p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+.dig-card-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0;
+  min-height: 220px;
+}
+
+.dig-card-preview img {
+  width: 150px;
+  height: 210px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.dig-card-info-box {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.dig-card-title {
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.dig-card-desc {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.dig-actions {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+
+.dig-actions .btn {
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.dig-btn-take {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+}
+
+.dig-btn-take:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+}
+
+.dig-btn-skip {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+}
+
+.dig-btn-skip:hover {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
+}
+
+@media (max-width: 768px) {
+  .dig-deeper-content {
+    padding: 1.25rem 1rem;
+    width: 95vw;
+    border-radius: 14px;
+  }
+
+  .dig-deeper-content h2 {
+    font-size: 1.3rem;
+  }
+
+  .dig-deeper-content p {
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+  }
+
+  .dig-card-preview {
+    min-height: 160px;
+    margin: 8px 0;
+  }
+
+  .dig-card-preview img {
+    width: 120px;
+    height: 168px;
+  }
+
+  .dig-card-info-box {
+    padding: 8px 12px;
+    margin-bottom: 14px;
+  }
+
+  .dig-actions .btn {
+    min-height: 44px;
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+}

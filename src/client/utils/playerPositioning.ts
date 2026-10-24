@@ -59,11 +59,25 @@ export const calculatePlayerPositions = (
   isSelfDead: boolean
 ): PlayerPositions => {
   const angle = calculatePlayerAngle(playerIndex, totalPlayers, selfIndex, isSelfDead);
+  const isPortrait = typeof window !== 'undefined' && window.innerHeight > window.innerWidth && window.innerWidth <= 768;
+
+  // On portrait mobile, spread vertically while preventing horizontal edge clipping
+  const cardRadiusX = isPortrait ? 'min(36vw, 36vh)' : 'min(35vw, 35vh)';
+  const cardRadiusY = isPortrait ? 'min(32vh, 44vw)' : 'min(35vw, 35vh)';
+  const infoRadiusX = isPortrait ? 'min(42vw, 42vh)' : 'min(45vw, 45vh)';
+  const infoRadiusY = isPortrait ? 'min(38vh, 50vw)' : 'min(45vw, 45vh)';
+
+  const radian = (angle * Math.PI) / 180;
+
   return {
     cardPosition: {
-      ...calculateCircularPosition(angle, 'min(35vw, 35vh)'),
+      top: `calc(50% - ${cardRadiusY} * ${Math.cos(radian)})`,
+      left: `calc(50% + ${cardRadiusX} * ${Math.sin(radian)})`,
       angle: angle - 90,
     },
-    infoPosition: calculateCircularPosition(angle, 'min(45vw, 45vh)'),
+    infoPosition: {
+      top: `calc(50% - ${infoRadiusY} * ${Math.cos(radian)})`,
+      left: `calc(50% + ${infoRadiusX} * ${Math.sin(radian)})`,
+    },
   };
 };

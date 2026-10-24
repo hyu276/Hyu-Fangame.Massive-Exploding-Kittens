@@ -1,31 +1,35 @@
 /**
  * Utility functions for working with matchData
  */
-import {useMatchDetails} from "../context/MatchDetailsContext.tsx";
 import {PlayerID} from "boardgame.io";
 
-const EMPTY_NAME = "Empty Seat";
+const EMPTY_NAME = "Chỗ trống";
 
 export interface MatchPlayer {
-  id: PlayerID;
+  id: PlayerID | number;
   name?: string;
   isConnected?: boolean;
 }
 
 /**
- * Get player name from matchData by player ID
- * Returns "Player X" if matchData is not available
- * Returns "Empty Seat" if matchData is available but player name is missing
+ * Get player name from matchData by player ID or MatchPlayer object.
+ * Pure function with NO hooks!
  */
-export function getPlayerName(player: MatchPlayer | string | null | undefined): string {
-  if (!player) return EMPTY_NAME;
+export function getPlayerName(
+  player: MatchPlayer | string | number | null | undefined,
+  matchData?: MatchPlayer[]
+): string {
+  if (player === null || player === undefined) return EMPTY_NAME;
 
-  if (typeof player === 'string') {
-    const { matchDetails } = useMatchDetails();
-    const players = matchDetails?.players;
-    const playerObj = players?.find(p => p.id === player);
-    return playerObj?.name || EMPTY_NAME;
+  if (typeof player === 'object') {
+    return player.name || EMPTY_NAME;
   }
 
-  return player?.name || EMPTY_NAME;
+  const pIdStr = String(player);
+  if (matchData && Array.isArray(matchData)) {
+    const playerObj = matchData.find(p => String(p.id) === pIdStr);
+    if (playerObj?.name) return playerObj.name;
+  }
+
+  return `Người chơi ${pIdStr}`;
 }

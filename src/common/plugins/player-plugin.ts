@@ -3,6 +3,7 @@ import {createPlayerState, filterPlayerView} from '../setup/player-setup';
 import type {Ctx, Plugin} from 'boardgame.io';
 import type {IContext, IGameState} from '../models';
 import {TheGame} from "../entities/game";
+import { normalizeViewerID } from '../utils/viewer-id';
 
 export const createPlayerPlugin = (): Plugin => {
   const basePlugin = PluginPlayer({
@@ -12,11 +13,14 @@ export const createPlayerPlugin = (): Plugin => {
   // Wrap the playerView to access G from the State
   return {
     ...basePlugin,
+    // PluginPlayer mutates data.players directly. Isolate each transaction so INVALID_MOVE
+    // can discard plugin mutations together with G and queued events.
+    api: (context) => basePlugin.api!({ ...context, data: structuredClone(context.data) }),
     playerView: ({G, ctx, data, playerID}: {G: IGameState, data: any, ctx: Ctx, playerID?: string | null}) => {
       const context = {
         G,
         ctx,
-        playerID: playerID,
+        playerID: normalizeViewerID(playerID),
       } as IContext;
 
       const game = new TheGame(context);

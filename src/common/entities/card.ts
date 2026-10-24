@@ -10,6 +10,9 @@ export class Card {
   public id: number;
   public name: string;
   public index: number;
+  public isMarked?: boolean;
+  public isFaceUp?: boolean;
+  public isLocked?: boolean;
 
   constructor(
     private game: TheGame,
@@ -18,10 +21,35 @@ export class Card {
     this.id = _data.id;
     this.name = _data.name;
     this.index = _data.index;
+    this.isMarked = _data.isMarked;
+    this.isFaceUp = _data.isFaceUp;
+    this.isLocked = _data.isLocked;
   }
 
   get data(): ICard {
-    return {id: this.id, name: this.name, index: this.index};
+    return {id: this.id, name: this.name, index: this.index, isMarked: this.isMarked, isFaceUp: this.isFaceUp, isLocked: this.isLocked};
+  }
+
+  setMarked(val: boolean = true) {
+    this.isMarked = val;
+    for (const p of this.game.players.allPlayers) {
+      const c = p.state.hand.find(card => card.id === this.id);
+      if (c) c.isMarked = val;
+    }
+  }
+
+  setLocked(val: boolean = true) {
+    this.isLocked = val;
+    for (const p of this.game.players.allPlayers) {
+      const c = p.state.hand.find(card => card.id === this.id);
+      if (c) c.isLocked = val;
+    }
+  }
+
+  setFaceUp(val: boolean = true) {
+    this.isFaceUp = val;
+    const c = this.game.piles.drawPile.state.cards.find(card => card.id === this.id);
+    if (c) c.isFaceUp = val;
   }
 
   get type(): CardType {
@@ -42,9 +70,9 @@ export class Card {
 
     // Add to destination
     if (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= destination.length) {
-      destination.insertCard(cardData, insertIndex);
+      destination.insertCard(this.data, insertIndex);
     } else {
-      destination.addCard(cardData);
+      destination.addCard(this.data);
     }
 
     // Determine visibility
@@ -61,11 +89,16 @@ export class Card {
             finalVisibleTo.push(source);
           }
         }
+      } else if (destination instanceof Pile && destination.name === 'discardPile') {
+        // Discard pile is public to all players
+        finalVisibleTo = [];
+      } else {
+        // Draw pile or secret piles: only visible to source player
+        finalVisibleTo = source ? [source] : [];
       }
     }
 
     // Enqueue animation
-    // Note: since source is string and destination is Player|Pile, we adapt enqueue
     const toStr = destination instanceof Player ? destination.id : destination.name;
     
     const animation = {

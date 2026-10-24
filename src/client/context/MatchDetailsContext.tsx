@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { LobbyClient } from 'boardgame.io/client';
 import { MatchPlayer } from '../utils/matchData';
 import {GAME_NAME, SERVER_URL} from "../config.ts";
@@ -7,6 +7,7 @@ export interface MatchDetails {
   players: MatchPlayer[];
   numPlayers: number;
   matchName: string;
+  isBotMatch?: boolean;
 }
 
 interface MatchDetailsContextType {
@@ -21,68 +22,55 @@ const MatchDetailsContext = createContext<MatchDetailsContextType | undefined>(u
 
 interface MatchDetailsProviderProps {
   matchID: string;
+  localDetails?: MatchDetails;
   children: ReactNode;
 }
 
-export function MatchDetailsProvider({ matchID, children }: MatchDetailsProviderProps) {
-  const [matchDetails, setMatchDetails] = useState<MatchDetails | null>(null);
-  const [loading, setLoading] = useState(true);
+export function MatchDetailsProvider({ matchID, children, localDetails }: MatchDetailsProviderProps) {
+  const [matchDetails, setMatchDetails] = useState<MatchDetails | null>(localDetails ?? null);
+  const [loading, setLoading] = useState(!localDetails);
   const [error, setError] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState<number>(3000);
 
-  const fetchMatchDetails = async () => {
-    if (!matchID) {
-      setLoading(false);
-      return;
-    }
-
+  const requestVersion = useRef(0);
+  const fetchMatchDetails = useCallback(async () => {
+    if (localDetails || !matchID) return;
+    const version = ++requestVersion.current;
     try {
-      const lobbyClient = new LobbyClient({ server: SERVER_URL });
-      const match = await lobbyClient.getMatch(GAME_NAME, matchID);
-
-
-      const matchPlayers: MatchPlayer[] = match.players.map((p: any) => ({
-        id: String(p.id),
-        name: p.name,
-        isConnected: p.isConnected,
-      }));
-      
+      const match = await new LobbyClient({ server: SERVER_URL }).getMatch(GAME_NAME, matchID);
+      if (version !== requestVersion.current) return;
       setMatchDetails({
         matchID: match.matchID,
         matchName: match.setupData?.matchName || 'Match',
-        numPlayers: match.setupData?.maxPlayers || match.players.length,
-        players: matchPlayers,
+        numPlayers: match.players.length,
+        players: match.players.map(p => ({ id: String(p.id), name: p.name, isConnected: p.isConnected })),
       });
       setError(null);
-    } catch (err: any) {
-      console.error('Error fetching match details:', err);
-      // Don't set error immediately on polling failure to avoid flickering UI
-      // specially if network is flaky or server restarts
-      if (!matchDetails) {
-        setError(err.message || 'Failed to load match details');
-      }
+    } catch (err) {
+      if (version === requestVersion.current) setError(err instanceof Error ? err.message : 'Không thể tải thông tin phòng');
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
-  };
+  }, [matchID, localDetails]);
 
   useEffect(() => {
-    fetchMatchDetails(); // Initial fetch
-    
-    // Poll based on interval
-    const interval = setInterval(fetchMatchDetails, pollingInterval);
-    
+    setMatchDetails(localDetails ?? null);
+    setError(null);
+    setLoading(!localDetails && !!matchID);
+    void fetchMatchDetails();
+    const requests = requestVersion;
+    return () => { requests.current++; };
+  }, [matchID, localDetails, fetchMatchDetails]);
+
+  useEffect(() => {
+    if (localDetails || !matchID) return;
+    const interval = setInterval(() => void fetchMatchDetails(), Math.max(500, pollingInterval));
     return () => clearInterval(interval);
-  }, [matchID, pollingInterval]);
-
-  useEffect(() => {
-    const timeout = setTimeout(fetchMatchDetails, 100);
-    return () => clearTimeout(timeout);
-  }, [matchID, matchDetails?.matchName]);
+  }, [matchID, localDetails, pollingInterval, fetchMatchDetails]);
 
   return (
     <MatchDetailsContext.Provider value={{ 
-      matchDetails, 
+      matchDetails: localDetails ?? matchDetails, 
       loading, 
       error, 
       refreshMatchDetails: fetchMatchDetails,

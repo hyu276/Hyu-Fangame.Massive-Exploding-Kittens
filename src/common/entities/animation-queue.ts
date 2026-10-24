@@ -48,7 +48,7 @@ export class AnimationQueue {
     const animationsToPlay: {id: number, animation: IAnimation}[] = []
     let highestTime: number = lastTimePlayed
     let uniqueCounter = 0;
-    for (let id of Object.keys(this.queue).map(Number)) {
+    for (const id of Object.keys(this.queue).map(Number)) {
       if (id > lastTimePlayed) {
         const animations = this.queue[id];
         if (animations) {

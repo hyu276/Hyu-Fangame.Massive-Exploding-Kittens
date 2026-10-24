@@ -7,4 +7,101 @@ export const
   NAME_NOPE = 'nope',
   NAME_SEE_THE_FUTURE = 'see_the_future',
   NAME_DEFUSE = 'defuse',
-  NAME_EXPLODING_KITTEN = 'exploding_kitten';
+  NAME_EXPLODING_KITTEN = 'exploding_kitten',
+  // Thẻ mở rộng Imploding Kittens
+  NAME_IMPLODING_KITTEN = 'imploding_kitten',
+  NAME_REVERSE = 'reverse',
+  NAME_DRAW_FROM_THE_BOTTOM = 'draw_from_the_bottom',
+  NAME_ALTER_THE_FUTURE = 'alter_the_future',
+  NAME_FERAL_CAT = 'feral_cat',
+  NAME_TARGETED_ATTACK = 'targeted_attack',
+  // Thẻ mở rộng Streaking Kittens
+  NAME_STREAKING_KITTEN = 'streaking_kitten',
+  NAME_SUPER_SKIP = 'super_skip',
+  NAME_SEE_THE_FUTURE_5X = 'see_the_future_5x',
+  NAME_ALTER_THE_FUTURE_5X = 'alter_the_future_5x',
+  NAME_SWAP_TOP_AND_BOTTOM = 'swap_top_and_bottom',
+  NAME_GARBAGE_COLLECTION = 'garbage_collection',
+  NAME_CATOMIC_BOMB = 'catomic_bomb',
+  NAME_MARK = 'mark',
+  NAME_CURSE_OF_THE_CAT_BUTT = 'curse_of_the_cat_butt',
+  // Thẻ mở rộng Barking Kittens
+  NAME_BARKING_KITTEN = 'barking_kitten',
+  NAME_TOWER_OF_POWER = 'tower_of_power',
+  NAME_ALTER_THE_FUTURE_3X_NOW = 'alter_the_future_3x_now',
+  NAME_BURY = 'bury',
+  NAME_PERSONAL_ATTACK_3X = 'personal_attack_3x',
+  NAME_SHARE_THE_FUTURE_3X = 'share_the_future_3x',
+  NAME_ILL_TAKE_THAT = 'ill_take_that',
+  NAME_POTLUCK = 'potluck',
+  // Thẻ mở rộng Zombie Kittens
+  NAME_ZOMBIE_KITTEN = 'zombie_kitten',
+  NAME_CLONE = 'clone',
+  NAME_DIG_DEEPER = 'dig_deeper',
+  NAME_FEED_THE_DEAD = 'feed_the_dead',
+  NAME_GRAVE_ROBBER = 'grave_robber',
+  NAME_ATTACK_OF_THE_DEAD = 'attack_of_the_dead',
+  NAME_SHUFFLE_NOW = 'shuffle_now',
+  NAME_CLAIRVOYANCE = 'clairvoyance',
+  // Thẻ mở rộng Aggro / Attacking Kittens
+  NAME_REVERSE_ATTACK = 'reverse_attack',
+  NAME_BURIED_TREASURE = 'buried_treasure',
+  NAME_ILL_TAKE_IT_FROM_HERE = 'ill_take_it_from_here',
+  NAME_ANNOY = 'annoy',
+  NAME_SLAP_1X = 'slap_1x',
+  NAME_SLAP_2X = 'slap_2x',
+  NAME_SLAP_3X = 'slap_3x',
+  NAME_STEAL_A_CARD = 'steal_a_card',
+  // Thẻ mở rộng Creepy Kittens
+  NAME_LOOK_AT_THE_BOTTOM = 'look_at_the_bottom',
+  NAME_DRAW_FROM_ANYWHERE = 'draw_from_anywhere',
+  NAME_CHOOSE_YOUR_FATE = 'choose_your_fate',
+  NAME_FLIP_FOUR = 'flip_four',
+  // Thẻ mở rộng Defending Kittens
+  NAME_SEE_THE_FUTURE_1X = 'see_the_future_1x',
+  NAME_CURSE_OF_CRYSTAL_CORN = 'curse_of_crystal_corn',
+  NAME_KITTEN_ROLL_CALL = 'kitten_roll_call',
+  // Thẻ mở rộng Timebomb Kittens
+  NAME_TIMEBOMB_KITTEN = 'timebomb_kitten',
+  NAME_DEFUSE_TIMEBOMB = 'defuse_timebomb',
+  NAME_BLIND = 'blind',
+  NAME_SEARCH = 'search',
+  NAME_DISCARD = 'discard',
+  NAME_COPYCAT = 'copycat',
+
+  // Mode 9: Good vs Evil
+  NAME_ARMAGEDDON = 'armageddon',
+  NAME_GODCAT = 'godcat',
+  NAME_DEVILCAT = 'devilcat',
+  NAME_RAISING_HECK = 'raising_heck',
+  NAME_REVEAL_THE_FUTURE_3X = 'reveal_the_future_3x',
+
+  // Mode 10: Rage Mode
+  NAME_BOOBY_TRAP_KITTEN = 'booby_trap_kitten',
+  NAME_SHARED_SUFFERING = 'shared_suffering',
+  NAME_REVEAL_AND_STEAL = 'reveal_and_steal',
+  NAME_BAD_DECISION = 'bad_decision',
+
+  // Mode 11: Curse You!
+  NAME_PEEK = 'peek',
+  NAME_DISGUISE_CHARM = 'disguise_charm',
+  NAME_TRANSFORMATION_CHARM = 'transformation_charm',
+  NAME_SIGHT_CHARM = 'sight_charm',
+  NAME_BOTTOM_CHARM = 'bottom_charm',
+  NAME_GIVING_CURSE = 'giving_curse',
+  NAME_EXCESS_CURSE = 'excess_curse',
+
+  // Mode 12: 10th Anniversary Legacy (8 bonus cards)
+  NAME_AMATEUR_ARCHEOLOGY = 'amateur_archeology',
+  NAME_CREEPY_PEEKY = 'creepy_peeky',
+  NAME_HIP_CAT = 'hip_cat',
+  NAME_HIP_BAT = 'hip_bat',
+  NAME_PLUS_PLUS = 'plus_plus',
+  NAME_ROBIN_HOOD = 'robin_hood',
+  NAME_BATTLE_HAMSTER = 'battle_hamster',
+  NAME_THE_TWINS = 'the_twins',
+
+  // Mode 13: Exploding Minions
+  NAME_EXPLODING_MINION = 'exploding_minion',
+  NAME_MINION_DEFUSE = 'minion_defuse',
+  NAME_MINION_CHARACTER_CARD = 'minion_character_card';

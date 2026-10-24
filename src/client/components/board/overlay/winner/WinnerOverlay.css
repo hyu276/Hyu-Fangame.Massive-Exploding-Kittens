@@ -30,6 +30,28 @@
   animation: scaleIn 0.5s ease-out 0.2s both;
   border: calc(var(--scale) * 0.4) solid var(--color-accent);
   min-width: calc(var(--scale) * 40);
+  max-width: 90vw;
+}
+
+@media (max-width: 768px) {
+  .winner-content {
+    min-width: unset;
+    width: 90vw;
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+  }
+  .winner-trophy {
+    font-size: 3rem;
+  }
+  .winner-title {
+    font-size: 1.5rem;
+  }
+  .winner-name {
+    font-size: 1.25rem;
+  }
+  .winner-subtitle {
+    font-size: 0.9rem;
+  }
 }
 
 @keyframes scaleIn {

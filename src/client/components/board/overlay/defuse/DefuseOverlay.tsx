@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import './DefuseOverlay.css';
 import { useGame } from '../../../../context/GameContext';
-import { DEFUSE_EXPLODING_KITTEN } from '../../../../../common';
+import { DEFUSE_EXPLODING_KITTEN, NAME_IMPLODING_KITTEN } from '../../../../../common';
 
 export default function DefuseOverlay() {
   const game = useGame();
@@ -12,6 +12,7 @@ export default function DefuseOverlay() {
   
   const cardAmount = game.piles.drawPile.size;
   const isDefusing = game.selfPlayer?.isInStage(DEFUSE_EXPLODING_KITTEN);
+  const isImploding = !!game.selfPlayer?.hasCard(NAME_IMPLODING_KITTEN);
 
   // Set initial random position when entering the defuse stage
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function DefuseOverlay() {
     } else {
       setInsertIndex(null);
     }
-  }, [isDefusing]);
+  }, [isDefusing, cardAmount]);
 
   const handleDefuse = () => {
     if (insertIndex !== null) {
@@ -36,7 +37,7 @@ export default function DefuseOverlay() {
     }
   };
 
-  const updatePosition = (clientY: number) => {
+  const updatePosition = useCallback((clientY: number) => {
     if (!trackRef.current) return;
     const rect = trackRef.current.getBoundingClientRect();
     
@@ -50,7 +51,7 @@ export default function DefuseOverlay() {
     // Map to card index
     const newIndex = Math.round(percentage * cardAmount);
     setInsertIndex(newIndex);
-  };
+  }, [cardAmount]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -108,7 +109,7 @@ export default function DefuseOverlay() {
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleUp);
     };
-  }, [isDragging, cardAmount]);
+  }, [isDragging, updatePosition]);
 
   if (!isDefusing) {
       return null;
@@ -117,19 +118,34 @@ export default function DefuseOverlay() {
   const currentIdx = insertIndex ?? 0;
   const percentage = cardAmount > 0 ? (currentIdx / cardAmount) * 100 : 0;
 
+  const victimId = (game.gameState as any).defusingVictimId;
+  const isTakingOver = !!victimId;
+
   return (
     <div className="defuse-overlay">
       <div className="defuse-content">
-        <h2>Defuse Protocol</h2>
-        <p>Select insertion depth for the Exploding Kitten.</p>
+        <h2>
+          {isTakingOver
+            ? "🙋‍♂️ Để Đó Tôi Lo! (I'll Take It From Here)"
+            : isImploding
+            ? '🌌 Kích Hoạt Imploding Kitten!'
+            : '🛠️ Gỡ Bom Thành Công!'}
+        </h2>
+        <p>
+          {isTakingOver
+            ? 'Bạn đã cướp quyền đặt bom! Hãy chọn vị trí bí mật để giấu Mèo Nổ trở lại vào Chồng bài rút:'
+            : isImploding
+            ? 'Lần đầu rút: Bạn an toàn (không tốn Defuse)! Hãy chọn vị trí để nhét lá bài này NGỬA MẶT vào Chồng bài rút (lần sau ai rút trúng sẽ nổ ngay):'
+            : 'Chọn vị trí để bí mật giấu Mèo Nổ trở lại vào Chồng bài rút:'}
+        </p>
         
         <div className="defuse-interface">
             <div className="depth-markers">
-                <div className="marker-label top">Top Deck</div>
+                <div className="marker-label top">Đỉnh bài</div>
                 <div className="marker-label mid">
                     <div className="marker-line"></div>
                 </div>
-                <div className="marker-label bottom">Bottom</div>
+                <div className="marker-label bottom">Đáy bài</div>
             </div>
 
             <div 
@@ -148,31 +164,34 @@ export default function DefuseOverlay() {
                   onTouchStart={handleThumbTouchStart}
                 >
                     <div className="thumb-graphic">
-                        <img src="/assets/cards/exploding_kitten/0.png" alt="Kitten" />
+                        {isImploding ? (
+                          <img src="/assets/cards/imploding_kitten/0.png" alt="Imploding Kitten" />
+                        ) : (
+                          <img src="/assets/cards/exploding_kitten/0.png" alt="Mèo Nổ" />
+                        )}
                     </div>
                     <div className="thumb-arrow"></div>
                     
                     {/* Tooltip moves with the thumb */}
                     <div className="thumb-tooltip">
                         <span className="tooltip-value">
-                            {currentIdx === 0 ? "Top Card" : 
-                             currentIdx === cardAmount ? "Bottom" : 
-                             `${currentIdx} Deep`}
+                            {currentIdx === 0 ? "Trên cùng (Bẫy người kế tiếp)" : 
+                             currentIdx === cardAmount ? "Dưới đáy bài" : 
+                             `Vị trí thứ ${currentIdx + 1}`}
                          </span>
                     </div>
                 </div>
             </div>
             
             <div className="info-panel">
-               {/* Could add risk visualizer here later */}
-               {currentIdx === 0 && <div className="risk-badge high">EXPLODE!</div>}
-               {currentIdx > 0 && currentIdx < cardAmount && <div className="risk-badge medium">Hidden</div>}
-               {currentIdx === cardAmount && <div className="risk-badge low">Lame</div>}
+               {currentIdx === 0 && <div className="risk-badge high">NỔ NGAY!</div>}
+               {currentIdx > 0 && currentIdx < cardAmount && <div className="risk-badge medium">Ẩn Sâu</div>}
+               {currentIdx === cardAmount && <div className="risk-badge low">Đáy Bài</div>}
             </div>
         </div>
 
         <button className="defuse-confirm-btn btn btn-primary" onClick={handleDefuse}>
-          Confirm Insertion
+          Xác Nhận Đặt Bài
         </button>
       </div>
     </div>

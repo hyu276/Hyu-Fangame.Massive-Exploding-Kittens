@@ -34,6 +34,7 @@
   flex-direction: column;
   gap: 2rem;
   max-height: 90vh;
+  max-height: 92dvh;
   overflow-y: auto;
 }
 
@@ -102,27 +103,37 @@
 
 @media (max-width: 640px) {
   .modal-content {
-    padding: 1.5rem;
-    gap: 1.5rem;
+    padding: 1.25rem 1rem;
+    gap: 1.25rem;
+    width: 95%;
+    max-height: 92dvh;
+    border-radius: 18px;
   }
 
   .modal-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .modal-close-btn {
     top: 0.75rem;
     right: 0.75rem;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     font-size: 1.25rem;
   }
 
   .modal-actions {
     flex-direction: column;
+    gap: 0.5rem;
   }
 
   .modal-actions > * {
     width: 100%;
+    min-height: 44px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }

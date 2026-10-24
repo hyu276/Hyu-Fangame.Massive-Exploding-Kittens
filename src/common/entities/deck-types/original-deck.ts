@@ -10,6 +10,7 @@ import {
   SEE_THE_FUTURE,
   SHUFFLE,
   SKIP,
+  ZOMBIE_KITTEN,
 } from '../../registries/card-registry';
 
 const STARTING_HAND_SIZE = 7;
@@ -18,7 +19,13 @@ const MAX_DECK_DEFUSE_CARDS = 2;
 
 export class OriginalDeck extends DeckType {
   constructor() {
-    super('original');
+    super(
+      'original',
+      'Bộ Tiêu Chuẩn (Original)',
+      'Bộ bài tiêu chuẩn đầy đủ các lá: Mèo Nổ, Gỡ Bom, Tấn Công, Bỏ Lượt, Xin Xỏ, Xáo Bài, Nhìn Trước Tương Lai, Chặn (Nope) và Thẻ Mèo Thường.',
+      true,
+      '🃏'
+    );
   }
 
   startingHandSize(): number {
@@ -26,6 +33,10 @@ export class OriginalDeck extends DeckType {
   }
 
   startingHandForcedCards(game: TheGame, index: number): ICard[] {
+    const isZombie = game.selectedDecks?.includes('zombie_kittens');
+    if (isZombie) {
+      return [ZOMBIE_KITTEN.createCard(index, game)];
+    }
     return [DEFUSE.createCard(index, game)];
   }
 
@@ -39,7 +50,7 @@ export class OriginalDeck extends DeckType {
       drawPile.addCard(FAVOR.createCard(i, game));
       drawPile.addCard(NOPE.createCard(i, game));
       for (let j = 0; j < 5; j++) {
-        drawPile.addCard(CAT_CARD.createCard(i, game));
+        drawPile.addCard(CAT_CARD.createCard(j, game));
       }
     }
 
@@ -50,12 +61,15 @@ export class OriginalDeck extends DeckType {
 
   addPostDealCards(game: TheGame): void {
     const playerCount = game.players.playerCount;
-    const remaining = Math.min(TOTAL_DEFUSE_CARDS - playerCount, MAX_DECK_DEFUSE_CARDS);
+    const isZombie = game.selectedDecks?.includes('zombie_kittens');
     const drawPile = game.piles.drawPile;
 
-    for (let i = 0; i < remaining; i++) {
-      const cardIndex = (playerCount + i) % TOTAL_DEFUSE_CARDS;
-      drawPile.addCard(DEFUSE.createCard(cardIndex, game));
+    if (!isZombie) {
+      const remaining = Math.min(TOTAL_DEFUSE_CARDS - playerCount, MAX_DECK_DEFUSE_CARDS);
+      for (let i = 0; i < remaining; i++) {
+        const cardIndex = (playerCount + i) % TOTAL_DEFUSE_CARDS;
+        drawPile.addCard(DEFUSE.createCard(cardIndex, game));
+      }
     }
 
     // add amount of players minus one exploding kitten

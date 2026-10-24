@@ -1,4 +1,4 @@
-import {defineConfig} from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const getAllowedHosts = (env: string | undefined): string[] | true => {
@@ -8,6 +8,19 @@ const getAllowedHosts = (env: string | undefined): string[] | true => {
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    target: 'esnext',
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
+    },
+  },
   server: {
     host: process.env.VITE_HOST || '0.0.0.0',
     port: parseInt(process.env.VITE_PORT || '5173'),

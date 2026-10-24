@@ -5,8 +5,8 @@ export function LobbyFooter() {
     <footer className="lobby-footer">
       <div className="lobby-disclaimer">
         <p>
-          This is a fanmade version of the board game for learning purposes.
-          Please consider <a href="https://www.explodingkittens.com/" target="_blank" rel="noopener noreferrer">buying the board game</a>.
+          Đây là phiên bản fanmade phục vụ mục đích học tập và giải trí.
+          Hãy ủng hộ tác giả bằng cách <a href="https://www.explodingkittens.com/" target="_blank" rel="noopener noreferrer">mua board game chính thức</a>.
         </p>
       </div>
       <a

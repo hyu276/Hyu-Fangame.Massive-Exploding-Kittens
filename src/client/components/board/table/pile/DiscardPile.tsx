@@ -6,6 +6,8 @@ import { useResponsive } from '../../../../context/ResponsiveContext';
 import { DISCARD } from '../../../../../common';
 import CardPreview from '../../CardPreview';
 
+import SimulatedCard, { isCardSimulated } from '../../player/card/SimulatedCard';
+
 export function DiscardPile() {
   const game = useGame();
   const { isMobile } = useResponsive();
@@ -25,6 +27,8 @@ export function DiscardPile() {
   const isNoped = pendingCard?.isNoped ?? false;
   const discardCard = pendingCard ? pendingCard.card : game.piles.discardPile.topCard;
   
+  const isSimulated = discardCard && isCardSimulated(discardCard.name);
+
   // Use card from pending state if present, otherwise use the top of the discard pile
   const displayImage = pendingCard 
     ? game.getCardTexture(pendingCard.card) 
@@ -35,7 +39,7 @@ export function DiscardPile() {
       <Pile
         ref={setDiscardRef}
         className={`discard-pile ${!discardCard ? 'empty' : ''}`}
-        image={discardCard ? displayImage : undefined}
+        image={discardCard && !isSimulated ? displayImage : undefined}
         onMouseEnter={() => {
           if (!isMobile) setIsDiscardPileSelected(true);
         }}
@@ -45,8 +49,11 @@ export function DiscardPile() {
         onClick={() => {
           if (isMobile) setIsDiscardPileSelected(true);
         }}
-      />
+      >
+        {isSimulated && discardCard && <SimulatedCard card={discardCard} />}
+      </Pile>
       <CardPreview
+        card={discardCard}
         cardImage={displayImage}
         anchorRef={discardPileRef}
         isVisible={isDiscardPileSelected && !!discardCard}
@@ -58,7 +65,7 @@ export function DiscardPile() {
           {/*Only show when at least one nope card been played*/}
           {pendingCard.nopeCount > 0 && (
             <div className={`status-badge ${isNoped ? 'noped' : 'active'}`}>
-              {isNoped ? 'Noped' : 'Un-Noped'}
+              {isNoped ? 'Đã bị Chặn' : 'Đã Gỡ Chặn'}
             </div>
           )}
 
@@ -68,7 +75,7 @@ export function DiscardPile() {
               className="nope-button-inline"
               onClick={() => game.playNope()}
             >
-              {isNoped ? 'Un-Nope!' : 'NOPE!'}
+              {isNoped ? 'HỦY CHẶN!' : 'CHẶN (NOPE)!'}
             </button>
           )}
         </>

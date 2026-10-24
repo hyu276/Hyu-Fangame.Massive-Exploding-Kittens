@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "exploding-kittens-backend",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-10-21",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "containers": [
+    {
+      "class_name": "GameContainer",
+      "image": "./Dockerfile",
+      "max_instances": 1
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GAME_CONTAINER",
+        "class_name": "GameContainer"
+      }
+    ]
+  },
+  "r2_buckets": [
+    {
+      "binding": "GAME_STORAGE",
+      "bucket_name": "exploding-kittens-storage"
+    }
+  ],
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": [
+        "GameContainer"
+      ]
+    }
+  ]
+}

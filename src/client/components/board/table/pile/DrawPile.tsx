@@ -5,6 +5,8 @@ import { useGame } from '../../../../context/GameContext';
 import { useAnimationNode } from '../../../../context/AnimationContext';
 import { DRAW } from '../../../../../common';
 import { NAME_SHUFFLE } from '../../../../../common';
+import SimulatedCard, { isCardSimulated } from '../../player/card/SimulatedCard';
+import { TheGameClient } from '../../../../entities/game-client';
 
 export function DrawPile() {
   const game = useGame();
@@ -67,15 +69,44 @@ export function DrawPile() {
     }
   };
 
+  const topFaceUpCard = (game.gameState as any).topDrawCard;
+  const isTopFaceUp = !!topFaceUpCard?.isFaceUp;
+  const isSimulated = topFaceUpCard && isCardSimulated(topFaceUpCard.name);
+  const topCardTexture = topFaceUpCard ? TheGameClient.getCardTexture(topFaceUpCard) : back;
+  const displayImage = isTopFaceUp && !isSimulated ? topCardTexture : (isTopFaceUp ? undefined : back);
+
   return (
     <Pile
       ref={drawPileAnimRef}
-      className={`draw-pile ${isDrawing ? 'drawing' : ''} ${isShuffling ? 'shuffling' : ''}`}
-      image={back}
+      className={`draw-pile ${isDrawing ? 'drawing' : ''} ${isShuffling ? 'shuffling' : ''} ${isTopFaceUp ? 'face-up-card' : ''}`}
+      image={displayImage}
       onClick={handleDrawClick}
       onMouseEnter={() => setIsHoveringDrawPile(true)}
       onMouseLeave={() => setIsHoveringDrawPile(false)}
     >
+      {isTopFaceUp && isSimulated && (
+        <SimulatedCard card={topFaceUpCard} />
+      )}
+      {isTopFaceUp && (
+        <div style={{
+          position: 'absolute',
+          top: '4px',
+          left: '4px',
+          right: '4px',
+          background: 'rgba(15, 23, 42, 0.9)',
+          color: '#38bdf8',
+          padding: '2px 4px',
+          borderRadius: '4px',
+          fontSize: '0.65rem',
+          fontWeight: 700,
+          textAlign: 'center',
+          border: '1px solid #38bdf8',
+          zIndex: 5,
+          pointerEvents: 'none'
+        }}>
+          👁️ Lộ Mặt
+        </div>
+      )}
       {isHoveringDrawPile && game.piles.drawPile.size > 0 && (
         <div className="card-counter">
           {game.piles.drawPile.size}

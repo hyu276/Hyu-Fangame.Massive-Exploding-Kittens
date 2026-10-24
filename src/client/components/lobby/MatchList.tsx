@@ -8,6 +8,7 @@ interface MatchSetupData {
   openCards: boolean;
   spectatorsSeeCards?: boolean;
   deckType?: string;
+  selectedDecks?: string[];
 }
 
 interface LobbyMatch {
@@ -41,8 +42,8 @@ export function MatchList({ matches, loading, error, onRefresh, onJoinMatch }: M
   return (
     <div className="lobby-section lobby-section-matches">
       <div className="lobby-section-header">
-        <h2 className="lobby-section-title">Available Matches</h2>
-        <button className="lobby-refresh-btn" onClick={onRefresh} title="Refresh">
+        <h2 className="lobby-section-title">Danh Sách Trận Đấu</h2>
+        <button className="lobby-refresh-btn" onClick={onRefresh} title="Làm mới">
           🔄
         </button>
       </div>
@@ -56,13 +57,13 @@ export function MatchList({ matches, loading, error, onRefresh, onJoinMatch }: M
       {loading ? (
         <div className="lobby-loading">
           <div className="lobby-spinner" />
-          <p className="lobby-loading-text">Loading matches...</p>
+          <p className="lobby-loading-text">Đang tải danh sách phòng...</p>
         </div>
       ) : sortedMatches.length === 0 ? (
         <div className="lobby-empty-state">
           <div className="lobby-empty-icon">🎲</div>
           <p className="lobby-empty-text">
-            No matches available.<br />Create one to get started!
+            Chưa có trận đấu nào khả dụng.<br />Hãy tạo phòng mới để bắt đầu ngay!
           </p>
         </div>
       ) : (

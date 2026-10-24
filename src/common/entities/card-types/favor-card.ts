@@ -16,6 +16,7 @@ export class FavorCard extends CardType {
 
   onPlayed(game: TheGame, _card: Card) {
     const { ctx } = game.context;
+    game.gameState.favorCountRemaining = game.gameState.comboMultiplier || 1;
 
     const candidates = game.players.allPlayers.filter((target) => {
       return target.id !== ctx.currentPlayer && target.isAlive && target.handSize > 0;

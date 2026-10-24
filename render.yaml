@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: exploding-kittens-backend
+    env: node
+    plan: free
+    buildCommand: npm ci && npm run build:server
+    startCommand: node dist/server/server/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SERVER_ORIGINS
+        value: "*"
+      - key: FLATFILE_DIR
+        value: ./storage/data

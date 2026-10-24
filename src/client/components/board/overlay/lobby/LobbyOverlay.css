@@ -36,6 +36,7 @@
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
+  max-height: 92dvh;
   overflow-y: auto;
 }
 
@@ -266,22 +267,42 @@
 /* Responsive */
 @media (max-width: 640px) {
   .game-lobby-content {
-    padding: 1.5rem;
+    padding: 1.25rem 0.85rem;
     gap: 1rem;
     border-radius: 16px;
+    width: 95vw;
+    max-height: 92dvh;
   }
 
   .game-lobby-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .game-lobby-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .game-lobby-start-btn {
     font-size: 1rem;
-    padding: 0.875rem 1.5rem;
+    padding: 0.875rem 1.25rem;
+    min-height: 48px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .invite-link-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .invite-copy-btn {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .game-lobby-player-slot {
@@ -292,4 +313,107 @@
   .game-lobby-player-icon {
     font-size: 1.2rem;
   }
+}
+
+/* Lobby Decks Section */
+.game-lobby-decks-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.game-lobby-decks-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.game-lobby-decks-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lobby-deck-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.9rem;
+  background: var(--color-overlay-bg);
+  border: 1.5px solid var(--color-card-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.lobby-deck-chip:hover:not(.locked) {
+  border-color: var(--color-accent);
+  background: var(--color-overlay-bg-strong);
+  transform: translateY(-1px);
+}
+
+.lobby-deck-chip.active {
+  border-color: var(--color-accent);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.lobby-deck-chip.locked {
+  cursor: default;
+}
+
+.deck-chip-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deck-chip-icon {
+  font-size: 1.2rem;
+}
+
+.deck-chip-avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.deck-chip-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.deck-chip-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.deck-chip-badge.base {
+  background: #f59e0b;
+  color: #0f172a;
+}
+
+.deck-chip-badge.exp-active {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.deck-chip-badge.exp-inactive {
+  background: #475569;
+  color: #cbd5e1;
 }

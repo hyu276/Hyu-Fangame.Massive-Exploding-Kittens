@@ -1,9 +1,12 @@
 html, body, #root {
   width: 100%;
   height: 100%;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 body {
@@ -57,7 +60,8 @@ body {
   --color-action-glow: #ff0000;
 
   @media (max-width: 768px) {
-    --scale: min(1.4vw, 1.4vh);
+    --scale: min(1.8vw, 1.3vh);
+    --table-size: min(94vw, 68vh);
   }
 
   /* Accent glow effects */
@@ -74,10 +78,50 @@ body {
   --color-overlay-bg-strong: rgba(0, 0, 0, 0.8);
 
   margin: 0;
-  font-family: "bebas-neue-pro-semiexpanded", "Comic Sans MS", "Comic Neue", cursive, sans-serif;
+  font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.3px;
   user-select: none;
 }
 
 *, *::before, *::after {
-  box-sizing: border-box
+  box-sizing: border-box;
+}
+
+/* Screen shake effect on explosion */
+@keyframes screenShakeAnim {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-8px, 6px) rotate(-1deg); }
+  30% { transform: translate(8px, -6px) rotate(1.5deg); }
+  45% { transform: translate(-6px, -4px) rotate(-1deg); }
+  60% { transform: translate(6px, 4px) rotate(0.5deg); }
+  75% { transform: translate(-3px, 2px) rotate(-0.5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.screen-shake {
+  animation: screenShakeAnim 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+}
+
+/* Table Felt Themes */
+body.theme-casino {
+  --color-primary: #15803d;
+  --color-primary-dark: #14532d;
+  --color-primary-darker: #052e16;
+  --color-primary-glow: rgba(22, 163, 74, 0.35);
+}
+
+body.theme-dark {
+  --color-primary: #1e293b;
+  --color-primary-dark: #0f172a;
+  --color-primary-darker: #020617;
+  --color-primary-glow: rgba(148, 163, 184, 0.2);
+}
+
+body.theme-cosmic {
+  --color-primary: #6b21a8;
+  --color-primary-dark: #4c1d95;
+  --color-primary-darker: #2e1065;
+  --color-primary-glow: rgba(168, 85, 247, 0.35);
 }

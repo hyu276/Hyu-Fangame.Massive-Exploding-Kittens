@@ -2,15 +2,14 @@ import './TurnBadge.css';
 import {useGame} from "../../../../context/GameContext.tsx";
 
 /**
- * Visual badge showing how many turns the current player has remaining
- * Prominently displayed when player has multiple turns (attacked)
+ * Hiển thị số lượt còn lại của người chơi hiện tại khi bị tấn công (attacked)
  */
 export default function TurnBadge() {
   const game = useGame();
 
-  const turnsRemaining = (game.turnManager.turnsRemaining || 1) - 1;
+  const turnsRemaining = game.turnManager.turnsRemaining || 1;
 
-  // Don't show anything if only 1 turn remaining (normal gameplay)
+  // Không hiển thị nếu chỉ còn 1 lượt (lượt bình thường)
   if (turnsRemaining <= 1) {
     return null;
   }
@@ -22,13 +21,13 @@ export default function TurnBadge() {
         <div className="turn-badge-text">
           <div className="turn-badge-count">{turnsRemaining}</div>
           <div className="turn-badge-label">
-            Turns Left
+            Lượt còn lại
           </div>
         </div>
       </div>
       {game.isSelfCurrentPlayer && (
         <div className="turn-badge-message">
-          You were attacked! Complete {turnsRemaining} turns.
+          Bạn bị tấn công! Hãy hoàn thành {turnsRemaining} lượt chơi.
         </div>
       )}
     </div>

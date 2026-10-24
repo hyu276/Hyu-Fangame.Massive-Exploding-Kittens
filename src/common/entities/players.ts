@@ -50,7 +50,7 @@ export class Players {
    * Falls back to currentPlayer if playerID not set
    */
   get actingPlayer(): Player {
-    const id = this.game.context.playerID;
+    const id = this.actingPlayerId;
     if (!id) {
       throw new Error('No playerID found in context; cannot determine acting player');
     }
@@ -108,6 +108,7 @@ export class Players {
    * Checks if target is alive, has card-types, and is not the current player.
    */
   validateTarget(targetPlayerId: string): Player {
+    if (targetPlayerId === this.actingPlayerId) throw new Error('Cannot target yourself');
     const player = this.getPlayer(targetPlayerId);
     if (!player) {
       throw new Error(`Player with ID ${targetPlayerId} not found`);

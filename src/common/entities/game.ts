@@ -12,7 +12,7 @@ import {AnimationQueue} from "./animation-queue";
 
 export class TheGame {
   public readonly context: IContext;
-  protected readonly gameState: IGameState;
+  public readonly gameState: IGameState;
   protected readonly bgContext: Ctx;
   public readonly events: EventsAPI;
   public readonly random: RandomAPI;
@@ -82,5 +82,11 @@ export class TheGame {
 
   get gameRules(): IGameRules {
     return this.gameState.gameRules;
+  }
+
+  get selectedDecks(): string[] {
+    return this.gameState.selectedDecks && this.gameState.selectedDecks.length > 0
+      ? this.gameState.selectedDecks
+      : ['original'];
   }
 }

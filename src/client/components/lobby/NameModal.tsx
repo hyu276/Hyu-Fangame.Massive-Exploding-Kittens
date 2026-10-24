@@ -11,16 +11,16 @@ interface NameModalProps {
 
 export function NameModal({ name, onNameChange, onSave, onClose }: NameModalProps) {
   return (
-    <Modal onClose={onClose} title="✏️ Change Your Name">
+    <Modal onClose={onClose} title="✏️ Đổi Tên Của Bạn">
       <div className="form-group">
-        <label className="form-label">New Name</label>
+        <label className="form-label">Tên hiển thị</label>
         <input
           type="text"
           className="form-input"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && onSave()}
-          placeholder="Your name..."
+          placeholder="Nhập tên của bạn..."
           autoFocus
         />
       </div>
@@ -31,17 +31,16 @@ export function NameModal({ name, onNameChange, onSave, onClose }: NameModalProp
           onClick={onClose}
           style={{ flex: 1 }}
         >
-          Cancel
+          Hủy
         </button>
         <button
           className="btn btn-primary"
           onClick={onSave}
           style={{ flex: 1 }}
         >
-          Save
+          Lưu
         </button>
       </div>
     </Modal>
   );
 }
-

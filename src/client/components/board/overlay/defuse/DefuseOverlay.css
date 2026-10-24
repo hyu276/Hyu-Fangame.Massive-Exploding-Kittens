@@ -24,23 +24,29 @@
   flex-direction: column;
   align-items: center;
   color: var(--color-text-light);
-  min-width: 450px;
-  max-width: 90vw; /* Responsive width */
+  min-width: unset;
+  width: 95vw;
+  max-width: 480px;
+  max-height: 92dvh;
+  overflow-y: auto;
   animation: slideUp 0.3s ease-out;
 }
 
 .defuse-content h2 {
   margin: 0;
   color: var(--color-accent);
-  font-size: 2rem;
+  font-size: clamp(1.3rem, 4vw, 2rem);
   text-transform: uppercase;
   letter-spacing: 2px;
   text-shadow: 0 0 10px var(--color-accent-glow-medium);
+  text-align: center;
 }
 
 .defuse-content p {
     color: var(--color-text-light-dim);
-    margin: 0.5rem 0 2rem 0;
+    margin: 0.5rem 0 1.5rem 0;
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    text-align: center;
 }
 
 .defuse-interface {
@@ -227,4 +233,73 @@
 .defuse-confirm-btn {
     width: 100%;
     margin-top: 1rem;
+    min-height: 44px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .defuse-content {
+    padding: 1.25rem 1rem;
+    border-radius: 16px;
+    gap: 0.25rem;
+  }
+
+  .defuse-interface {
+    height: clamp(200px, 34vh, 280px);
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .depth-track-container {
+    width: 48px;
+  }
+
+  .thumb-graphic {
+    width: 48px;
+    height: 68px;
+  }
+
+  .thumb-tooltip {
+    left: 50%;
+    transform: translateX(-50%);
+    top: -38px;
+    margin-left: 0;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+  }
+
+  .thumb-tooltip::before {
+    left: 50%;
+    top: auto;
+    bottom: -5px;
+    transform: translateX(-50%);
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    border-top: 5px solid var(--color-accent);
+    border-bottom: none;
+  }
+
+  .depth-markers {
+    font-size: 0.7rem;
+    padding-right: 6px;
+  }
+
+  .info-panel {
+    width: 50px;
+  }
+
+  .risk-badge {
+    height: 70px;
+    font-size: 0.7rem;
+    padding: 0.35rem;
+  }
+
+  .defuse-confirm-btn {
+    min-height: 48px;
+    padding: 0.85rem;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
 }

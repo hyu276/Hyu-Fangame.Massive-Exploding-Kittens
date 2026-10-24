@@ -1,19 +1,39 @@
-import {Component} from 'react';
-import {Client} from 'boardgame.io/react';
-import {SocketIO} from 'boardgame.io/multiplayer';
-import {LobbyClient as BgioLobbyClient} from 'boardgame.io/client';
-import {ExplodingKittens} from '../../../common';
-import ExplodingKittensBoard from "../board/Board";
+import { Component } from 'react';
+import { Client } from 'boardgame.io/react';
+import { SocketIO } from 'boardgame.io/multiplayer';
+import { ExplodingKittens } from '../../../common';
+import ExplodingKittensBoard from '../board/Board';
+import { LobbyClient as BgioLobbyClient } from 'boardgame.io/client';
 import LobbyClient from '../lobby/LobbyClient';
 import GameView from '../game-view/GameView';
-import {preloadCardImages} from '../../utils/preloadImages';
+import { preloadCardImages } from '../../utils/preloadImages';
 import { MatchDetailsProvider } from '../../context/MatchDetailsContext';
 import { SERVER_URL, GAME_NAME } from '../../config';
-import './App.css';
+import BotMatch from '../bot-match/BotMatch';
+import type { BotMatchOptions } from '../../../common/bots/difficulty';
+import { BoardGame } from '../../../common/board-game/board-race';
+import { BOARD_GAME_NAME } from '../../../common/board-game/manifest';
+import type { BoardEdition } from '../../../common/board-game/manifest';
+import BoardGameBoard, { BoardExitContext } from '../board-game/BoardGameBoard';
+import BoardLobby from '../board-game/BoardLobby';
+import BoardBotMatch from '../board-game/BoardBotMatch';
+import '../board-game/BoardGame.css';
 
-console.log('🔗 API URL:', SERVER_URL);
+const ExplodingKittensClient = Client({
+  game: ExplodingKittens,
+  board: ExplodingKittensBoard,
+  debug: false,
+  multiplayer: SocketIO({ server: SERVER_URL }),
+});
+const BoardRaceClient = Client({
+  game: BoardGame, board: BoardGameBoard, debug: false,
+  multiplayer: SocketIO({ server: SERVER_URL }),
+});
 
 interface AppState {
+  botMatch?: BotMatchOptions;
+  boardBot?: { edition: BoardEdition; botCount: number };
+  family: 'card' | 'board';
   inMatch: boolean;
   matchID: string | null;
   playerID: string | null;
@@ -22,10 +42,11 @@ interface AppState {
   numPlayers?: number;
 }
 
-export default class App extends Component<{}, AppState> {
+export default class App extends Component<Record<string, never>, AppState> {
   private lobbyClient = new BgioLobbyClient({server: SERVER_URL});
 
   state: AppState = {
+    family: new URLSearchParams(window.location.search).get('family') === 'board' ? 'board' : 'card',
     inMatch: false,
     matchID: null,
     playerID: null,
@@ -35,41 +56,36 @@ export default class App extends Component<{}, AppState> {
   };
 
   componentDidMount() {
+    try {
+      const savedTheme = localStorage.getItem('ek_theme');
+      if (savedTheme && savedTheme !== 'red') {
+        document.body.classList.add(`theme-${savedTheme}`);
+      }
+    } catch { /* Storage or browser capabilities may be unavailable. */ }
+
     preloadCardImages().then(() => {
       console.log('All card images preloaded successfully');
-    }).catch((err) => {
+    }).catch((err: any) => {
       console.error('Error preloading card images:', err);
     });
+
   }
 
   handleJoinMatch = (matchID: string, playerID: string | null, credentials: string | null) => {
     // Update URL with matchID
-    const newPath = `/${matchID}`;
-    window.history.pushState({}, '', newPath);
+    const newPath = `/${matchID}${this.state.family === 'board' ? '?family=board' : ''}`;
+    if (window.location.pathname !== newPath) window.history.pushState({}, '', newPath);
 
-    this.lobbyClient.getMatch(GAME_NAME, matchID)
-      .then(data => {
-        const matchName = data.setupData.matchName;
-        const numPlayers = data.setupData.maxPlayers;
+    // Save session to localStorage so reloading keeps player in their seat
+    if (playerID && credentials) {
+      try {
+        localStorage.setItem(`ek_session_${matchID}`, JSON.stringify({ playerID, credentials }));
+      } catch (e) {
+        console.error('Failed to save session to localStorage', e);
+      }
+    }
 
-        this.setState({
-          inMatch: true,
-          matchID,
-          playerID,
-          credentials,
-          matchName,
-          numPlayers
-        });
-      })
-      .catch((err) => {
-        console.error("Error fetching match details:", err);
-        this.setState({
-          inMatch: true,
-          matchID,
-          playerID,
-          credentials
-        });
-      });
+    this.setState({ inMatch: true, matchID, playerID, credentials });
   };
 
   handleLeaveMatch = async () => {
@@ -78,8 +94,15 @@ export default class App extends Component<{}, AppState> {
     if (matchID) {
       console.log('Leaving match...');
 
+      // Clear saved session
+      try {
+        localStorage.removeItem(`ek_session_${matchID}`);
+      } catch (e) {
+        console.error('Failed to remove session from localStorage', e);
+      }
+
       // Clear matchID from URL, return to root
-      window.history.pushState({}, '', '/');
+      window.history.pushState({}, '', this.state.family === 'board' ? '/?family=board' : '/');
 
       this.setState({
         inMatch: false,
@@ -101,7 +124,7 @@ export default class App extends Component<{}, AppState> {
         // Now leave the match via the lobby API
         // By this time, the client has been unmounted and Socket.IO has disconnected
         try {
-          await this.lobbyClient.leaveMatch(GAME_NAME, matchID, {
+          await this.lobbyClient.leaveMatch(this.state.family === 'board' ? BOARD_GAME_NAME : GAME_NAME, matchID, {
             playerID: playerID,
             credentials: credentials
           });
@@ -116,15 +139,24 @@ export default class App extends Component<{}, AppState> {
   };
 
   render() {
-    const {inMatch, matchID, playerID, credentials, matchName, numPlayers} = this.state;
+    if (this.state.boardBot) {
+      return <BoardBotMatch edition={this.state.boardBot.edition} botCount={this.state.boardBot.botCount}
+        onLeave={() => this.setState({ boardBot: undefined })} />;
+    }
+    if (this.state.botMatch) {
+      return <BotMatch options={this.state.botMatch} onLeave={() => this.setState({ botMatch: undefined })} />;
+    }
+    const {inMatch, matchID, playerID, credentials, matchName, numPlayers, family} = this.state;
 
     if (!inMatch) {
       return (
-        <LobbyClient
-          gameServer={SERVER_URL}
-          gameName={GAME_NAME}
-          onJoinMatch={this.handleJoinMatch}
-        />
+        <><nav className="game-family-switch" aria-label="Chọn dòng game">
+          <button aria-pressed={family === 'card'} onClick={() => { window.history.pushState({}, '', '/'); this.setState({ family: 'card' }); }}>Card Game</button>
+          <button aria-pressed={family === 'board'} onClick={() => { window.history.pushState({}, '', '/?family=board'); this.setState({ family: 'board' }); }}>The Board Game · thử nghiệm</button>
+        </nav>{family === 'board'
+          ? <BoardLobby server={SERVER_URL} onJoin={this.handleJoinMatch} onBot={(edition, botCount) => this.setState({ boardBot: { edition, botCount } })} />
+          : <LobbyClient gameServer={SERVER_URL} gameName={GAME_NAME} onJoinMatch={this.handleJoinMatch}
+            onStartBotMatch={botMatch => this.setState({ botMatch })} />}</>
       );
     }
 
@@ -134,15 +166,12 @@ export default class App extends Component<{}, AppState> {
       return <div>Error: Invalid match data</div>;
     }
 
-    // Create a fresh client component for each match
-    const ExplodingKittensClient = Client({
-      game: ExplodingKittens,
-      board: ExplodingKittensBoard,
-      debug: {
-        collapseOnLoad: true,
-      },
-      multiplayer: SocketIO({server: SERVER_URL}),
-    });
+    if (family === 'board') {
+      return <BoardExitContext.Provider value={() => void this.handleLeaveMatch()}><div className="board-match-shell">
+        <BoardRaceClient key={matchID} matchID={matchID} playerID={playerID || undefined} credentials={credentials || undefined} />
+      </div></BoardExitContext.Provider>;
+    }
+
 
     return (
       <MatchDetailsProvider matchID={matchID}>

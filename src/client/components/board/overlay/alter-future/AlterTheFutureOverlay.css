@@ -1,0 +1,251 @@
+.alter-future-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.alter-future-content {
+  background: var(--color-bg-dark, #0f172a);
+  border: 3px solid #8b5cf6;
+  border-radius: 20px;
+  padding: 1.8rem 2rem;
+  max-width: 95vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8),
+              0 0 30px rgba(139, 92, 246, 0.4);
+  animation: slideUp 0.3s ease-out;
+  overflow-y: auto;
+}
+
+.alter-future-title {
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  font-weight: bold;
+  color: #a78bfa;
+  margin: 0;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8),
+               0 0 12px rgba(139, 92, 246, 0.5);
+}
+
+.alter-future-description {
+  font-size: clamp(0.85rem, 1.8vw, 1rem);
+  color: #cbd5e1;
+  text-align: center;
+  margin: 0;
+  max-width: 600px;
+}
+
+.alter-future-cards {
+  display: flex;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.alter-future-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.alter-future-position-badge {
+  font-size: clamp(0.8rem, 1.8vw, 1rem);
+  font-weight: bold;
+  color: #0f172a;
+  background: #a78bfa;
+  padding: 0.25rem 0.8rem;
+  border-radius: 8px;
+  border: 2px solid #c4b5fd;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.alter-future-card {
+  aspect-ratio: 6 / 8.4;
+  width: clamp(120px, 18vw, 180px);
+  height: auto;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) no-repeat center;
+  background-size: cover;
+  border: 3px solid #8b5cf6;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6),
+              0 0 16px rgba(139, 92, 246, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+}
+
+.alter-future-card.simulated {
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.alter-future-card:hover {
+  transform: scale(1.04);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7),
+              0 0 20px rgba(139, 92, 246, 0.5);
+  border-color: #c4b5fd;
+}
+
+.alter-future-card-wrapper.active-slot .alter-future-card {
+  transform: scale(1.06);
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6) !important;
+}
+
+.alter-future-card-wrapper.active-slot .alter-future-position-badge {
+  background: #38bdf8 !important;
+  color: #0f172a !important;
+  border-color: #7dd3fc !important;
+}
+
+.alter-future-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(30, 41, 59, 0.8);
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  border: 1px solid #475569;
+}
+
+.alter-arrow-btn {
+  background: #6d28d9;
+  color: #f8fafc;
+  border: 1px solid #8b5cf6;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.alter-arrow-btn:hover:not(:disabled) {
+  background: #8b5cf6;
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+}
+
+.alter-arrow-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: #334155;
+  border-color: #475569;
+}
+
+.alter-slot-num {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 600;
+  min-width: 50px;
+  text-align: center;
+}
+
+.alter-future-confirm-btn {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: #ffffff;
+  border: 2px solid #a78bfa;
+  padding: 0.8rem 2.2rem;
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.4),
+              0 0 20px rgba(139, 92, 246, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.alter-future-confirm-btn:hover {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(109, 40, 217, 0.6),
+              0 0 25px rgba(139, 92, 246, 0.4);
+}
+
+.alter-future-confirm-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .alter-future-content {
+    padding: 1.25rem 0.75rem;
+    gap: 0.85rem;
+    width: 95vw;
+    max-height: 92dvh;
+    border-radius: 16px;
+  }
+
+  .alter-future-cards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    padding: 10px 6px;
+    gap: 12px;
+  }
+
+  .alter-future-card-wrapper {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+  }
+
+  .alter-future-card {
+    width: clamp(100px, 28vw, 135px);
+    border: 2.5px solid #8b5cf6;
+    border-radius: 10px;
+  }
+
+  .alter-future-controls {
+    padding: 0.35rem 0.5rem;
+    gap: 0.4rem;
+  }
+
+  .alter-arrow-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+  }
+
+  .alter-slot-num {
+    min-width: 36px;
+    font-size: 0.75rem;
+  }
+
+  .alter-future-confirm-btn {
+    min-height: 44px;
+    width: 100%;
+    max-width: 260px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
