@@ -5,7 +5,7 @@
   background: radial-gradient(ellipse at center, var(--color-primary-glow) 0%, transparent 70%),
   linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 50%, var(--color-primary-dark) 100%);
   padding: 1.5rem;
-  font-family: "Oswald", "Be Vietnam Pro", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Be Vietnam Pro", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -25,6 +25,7 @@
 }
 
 .lobby-title {
+  font-family: "Oswald", "Be Vietnam Pro", sans-serif;
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 900;
   color: var(--color-accent);
@@ -44,6 +45,7 @@
 }
 
 .lobby-subtitle {
+  font-family: "Be Vietnam Pro", sans-serif;
   font-size: 1.4rem;
   font-weight: 600;
   color: var(--color-text-light);
@@ -185,6 +187,7 @@
 }
 
 .lobby-section-title {
+  font-family: "Be Vietnam Pro", sans-serif;
   font-size: 1.75rem;
   font-weight: 800;
   color: var(--color-accent);
@@ -311,7 +314,7 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  font-family: "Oswald", "Be Vietnam Pro", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Be Vietnam Pro", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .lobby-initial-setup-content {
@@ -492,4 +495,13 @@
   .lobby-disclaimer p {
     font-size: 0.8rem;
   }
+}
+
+/* Never mix Latin display glyphs with Vietnamese body glyphs. */
+.lobby-container .btn-create-match,
+.lobby-container .btn-setup-bots,
+.lobby-container .lobby-section-title,
+.lobby-container .lobby-player-label,
+.lobby-container .lobby-player-name {
+  font-family: "Be Vietnam Pro", sans-serif;
 }
