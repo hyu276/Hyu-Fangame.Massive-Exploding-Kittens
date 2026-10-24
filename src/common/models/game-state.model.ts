@@ -28,6 +28,12 @@ export interface IHandShuffleDefense {
   lastRandomShuffleAtMs?: number;
 }
 
+export interface IPendingCardSteal {
+  attackerId: PlayerID;
+  targetPlayerId: PlayerID;
+  cardsToSteal: number;
+}
+
 export interface IPiles {
   drawPile: IPile;
   discardPile: IPile;
@@ -129,6 +135,7 @@ export interface IGameState {
   mustDrawFromAnywhereNext?: boolean;
   topDrawCard?: ICard | null;
   handShuffleDefense?: IHandShuffleDefense | null;
+  pendingCardSteal?: IPendingCardSteal | null;
   isShuffleForbidden?: boolean;
   searchTopCards?: ICard[];
   blindTargetId?: PlayerID | null;

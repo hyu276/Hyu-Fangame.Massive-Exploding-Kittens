@@ -658,35 +658,37 @@ export class Player extends CardHolder {
     };
   }
 
-  stealRandomCardFrom(target: Player): Card {
-    // 1. Kiểm tra nếu đối thủ đang đội Vương miện Tower of Power và còn kho bài dự trữ
-    if (
-      target.id === this.game.gameState.towerOfPowerCrownBearer &&
-      this.game.gameState.towerOfPowerStash &&
-      this.game.gameState.towerOfPowerStash.length > 0
-    ) {
-      const stash = this.game.gameState.towerOfPowerStash;
-      const index = Math.floor(this.game.random.Number() * stash.length);
+  /** Transfer exactly the hidden slot selected by the thief, preserving hazards. */
+  stealCardAt(target: Player, index: number): Card {
+    const stash = target.id === this.game.gameState.towerOfPowerCrownBearer
+      ? this.game.gameState.towerOfPowerStash : undefined;
+    const count = stash?.length || target.handSize;
+    if (!Number.isInteger(index) || index < 0 || index >= count) {
+      throw new Error("Invalid stolen card index");
+    }
+
+    if (stash?.length) {
+      // The crown protects the target's hand: pick from the face-down stash instead.
       const rawCard = stash.splice(index, 1)[0];
       const card = new Card(this.game, rawCard);
       this.addCard(card);
+      if (stash.length === 0) this.game.gameState.towerOfPowerCrownBearer = null;
       this.checkExplodingKittenHazard();
-
-      // Nếu kho dự trữ đã hết sạch bài, vương miện biến mất
-      if (stash.length === 0) {
-        this.game.gameState.towerOfPowerCrownBearer = null;
-      }
+      this.resolveStolenCardHazard(card);
       return card;
     }
 
-    const count = target.handSize;
-    if (count === 0) throw new Error("Target has no cards");
-
-    // Use game context random
-    const index = Math.floor(this.game.random.Number() * count);
-    // Give card from target to this player
-    const stolen = target.giveCard(index, this);
-    this.resolveStolenCardHazard(stolen);
-    return stolen;
+    const card = target.giveCard(index, this);
+    this.resolveStolenCardHazard(card);
+    return card;
   }
+
+  stealRandomCardFrom(target: Player): Card {
+    const stash = target.id === this.game.gameState.towerOfPowerCrownBearer
+      ? this.game.gameState.towerOfPowerStash : undefined;
+    const count = stash?.length || target.handSize;
+    if (count === 0) throw new Error("Target has no cards");
+    return this.stealCardAt(target, Math.floor(this.game.random.Number() * count));
+  }
+
 }

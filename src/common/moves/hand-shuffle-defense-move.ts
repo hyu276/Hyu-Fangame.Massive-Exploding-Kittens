@@ -1,6 +1,6 @@
 import { PlayerID } from "boardgame.io";
 import { TheGame } from "../entities/game";
-import { STAGE_HAND_SHUFFLE_DEFENSE } from "../constants/stages";
+import { STAGE_HAND_SHUFFLE_DEFENSE, STAGE_PICK_STOLEN_CARD } from "../constants/stages";
 import { HandShuffleDefense } from '../entities/hand-shuffle-defense';
 
 export function startHandShuffleDefense(
@@ -89,13 +89,16 @@ function executeActionWithoutDefense(
   if (actionType === 'steal') {
     const attacker = game.players.getPlayer(attackerId);
     const target = game.players.getPlayer(targetPlayerId);
-    if (attacker && target && target.handSize > 0) {
-      const count = Math.min(game.gameState.comboMultiplier || 1, target.handSize);
-      for (let i = 0; i < count; i++) {
-        attacker.stealRandomCardFrom(target);
-      }
-    }
+    const stash = game.gameState.towerOfPowerCrownBearer === targetPlayerId
+      ? game.gameState.towerOfPowerStash : null;
+    const available = stash?.length || target?.handSize || 0;
+    const count = Math.min(game.gameState.comboMultiplier || 1, available);
     game.gameState.comboMultiplier = 1;
+    if (attacker?.isAlive && target?.isAlive && count > 0) {
+      // Human and bot attackers both select a hidden index; only bots automate it.
+      game.gameState.pendingCardSteal = { attackerId, targetPlayerId, cardsToSteal: count };
+      game.turnManager.setActivePlayers({ value: { [attackerId]: STAGE_PICK_STOLEN_CARD } });
+    }
   } else if (actionType === 'mark') {
     const target = game.players.getPlayer(targetPlayerId);
     if (target && target.isAlive && target.handSize > 0) {

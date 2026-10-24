@@ -31,6 +31,7 @@ export const
   STAGE_DRAW_FROM_ANYWHERE = 'drawFromAnywhere',
   // Hand Shuffle Defense stage
   STAGE_HAND_SHUFFLE_DEFENSE = 'handShuffleDefense',
+  STAGE_PICK_STOLEN_CARD = 'pickStolenCard',
   // Aggro / Attacking Kittens stages
   CHOOSE_PLAYER_FOR_ANNOY = 'choosePlayerForAnnoy',
   // Defending Kittens stages

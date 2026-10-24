@@ -178,6 +178,7 @@ export const setupGame = (_context: any, setupData?: SetupData): IGameState => {
     mustDrawFromAnywhereNext: false,
     topDrawCard: null,
     handShuffleDefense: null,
+    pendingCardSteal: null,
     catBurglarHolderId: null,
     catBurglarUsedThisTurn: false,
     catBurglarInitialized: false,
