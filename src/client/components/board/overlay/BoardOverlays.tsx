@@ -10,6 +10,7 @@ import LookAtTheBottomOverlay from './look-at-the-bottom/LookAtTheBottomOverlay.
 import DrawFromAnywhereOverlay from './draw-from-anywhere/DrawFromAnywhereOverlay.tsx';
 import HandShuffleDefenseOverlay from './hand-shuffle-defense/HandShuffleDefenseOverlay.tsx';
 import SearchOverlay from './search/SearchOverlay.tsx';
+import PickCardToStealOverlay from './pick-stolen-card/PickCardToStealOverlay.tsx';
 import {useGame} from "../../../context/GameContext.tsx";
 import {
   CHOOSE_CARD_TO_GIVE,
@@ -108,6 +109,7 @@ export default function BoardOverlays() {
       <LookAtTheBottomOverlay />
       <DrawFromAnywhereOverlay />
       <HandShuffleDefenseOverlay />
+      <PickCardToStealOverlay />
       <SearchOverlay />
     </>
   );
