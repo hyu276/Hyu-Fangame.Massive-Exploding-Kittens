@@ -60,6 +60,14 @@ export class TheGame {
     return null;
   }
 
+  /** Tracks visual repetitions without affecting rules or card.index. */
+  nextArtworkSlot(cardName: string): number {
+    const sequence = this.gameState.artworkSequence ??= {};
+    const slot = sequence[cardName] ?? 0;
+    sequence[cardName] = slot + 1;
+    return slot;
+  }
+
   generateCardId(): number {
     return this.gameState.nextCardId++;
   }

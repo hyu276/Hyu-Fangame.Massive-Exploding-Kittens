@@ -107,6 +107,7 @@ export interface IGameState {
   teams?: Record<string, 'red' | 'blue'>;
   winningTeam?: 'red' | 'blue' | null;
   comboMultiplier?: number;
+  artworkSequence?: Record<string, number>;
   lastComboNotification?: {
     multiplier: number;
     cardName: string;

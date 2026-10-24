@@ -171,6 +171,7 @@ export const setupGame = (_context: any, setupData?: SetupData): IGameState => {
     teams: gameMode === GAME_MODE_TEAM_UP ? teams : undefined,
     winningTeam: null,
     comboMultiplier: 1,
+    artworkSequence: {},
     lastComboNotification: null,
     isReversed: false,
     implodingKittenFaceUp: false,
