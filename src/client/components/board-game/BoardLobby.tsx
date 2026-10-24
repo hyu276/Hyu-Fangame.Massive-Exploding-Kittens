@@ -3,6 +3,7 @@ import { LobbyClient } from 'boardgame.io/client';
 import type { BoardEdition } from '../../../common/board-game/manifest';
 import { BOARD_GAME_NAME } from '../../../common/board-game/manifest';
 import './BoardGame.css';
+import { CreditsButton } from '../credits/CreditsButton';
 
 interface MatchSummary {
   matchID: string;
@@ -101,5 +102,6 @@ export default function BoardLobby({ server, onJoin, onBot }: {
     </section>
     {error && <p className="board-error" role="alert">{error}</p>}
     <p className="board-disclaimer">Manifest thử nghiệm · Không công bố là bản luật hoặc bộ bài chính thức hoàn chỉnh.</p>
+    <div className="board-lobby-credits"><CreditsButton appearance="board" /></div>
   </main>;
 }
