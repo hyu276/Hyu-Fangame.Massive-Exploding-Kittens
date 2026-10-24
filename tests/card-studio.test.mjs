@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  distributeByCounts, distributeEvenly, expandArtworkSlots, summarizeChanges, validFilename, validType,
+  distributeByCounts, distributeEvenly, expandArtworkSlots, summarizeChanges, buildArtworkRestoreEntries, validFilename, validType,
   validateSlots, validateImageBytes, validateManifest
 } from '../docs/card-studio/core.mjs';
 
@@ -70,4 +70,27 @@ test('pre-commit review identifies added, changed, removed assets and allocation
   ]]]);
   const changed = summarizeChanges(old, next, new Set(['attack']));
   assert.deepEqual(changed.map(item => item.kind).sort(), ['add', 'delete', 'mapping', 'replace']);
+});
+
+test('restore commit can only replace card artwork blobs and the manifest', () => {
+  const old = new Map([
+    ['public/assets/cards/attack/a.png', 'a'.repeat(40)],
+    ['public/assets/cards/attack/b.webp', 'b'.repeat(40)],
+  ]);
+  const historical = new Map([
+    ['public/assets/cards/attack/a.png', 'c'.repeat(40)],
+    ['public/assets/cards/attack/c.jpg', 'd'.repeat(40)],
+  ]);
+  const entries = buildArtworkRestoreEntries(old, historical, 'e'.repeat(40));
+  assert.equal(entries.length, 4);
+  assert.deepEqual(entries.map(e => e.path).sort(), [
+    'public/assets/cards/attack/a.png',
+    'public/assets/cards/attack/b.webp',
+    'public/assets/cards/attack/c.jpg',
+    'src/client/data/card-artwork-map.json',
+  ]);
+  assert.equal(entries.find(e => e.path.endsWith('/b.webp')).sha, null);
+  assert.throws(() => buildArtworkRestoreEntries(old, new Map([
+    ['public/other/index.html', 'f'.repeat(40)],
+  ]), 'e'.repeat(40)), /không hợp lệ/);
 });

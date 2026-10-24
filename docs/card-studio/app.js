@@ -1,7 +1,7 @@
 import {
   CARD_PREFIX, MANIFEST_PATH, validType, validFilename, validSlotCount,
   validateSlots, distributeEvenly, distributeByCounts, validateImageBytes, validateManifest,
-  expandArtworkSlots, summarizeChanges
+  expandArtworkSlots, summarizeChanges, buildArtworkRestoreEntries
 } from './core.mjs';
 
 const OWNER = 'hyu276';
@@ -547,6 +547,101 @@ $('newType').addEventListener('click', () => {
   }
   state.selected = name; $('newTypeName').value = ''; render();
 });
+
+/**
+ * Restore only the artwork assets and mapping from a historical commit.
+ * Unrelated application source stays at the current HEAD. Never force update.
+ */
+async function restoreArtworkCommit(commitSha) {
+  if (!/^[0-9a-f]{40}$/i.test(commitSha)) throw new Error('Commit không hợp lệ.');
+  if (!state.token) throw new Error('Cần GitHub token để khôi phục.');
+  if (state.dirty.size || state.saving) throw new Error('Hãy lưu hoặc bỏ bản nháp đang chỉnh trước khi khôi phục.');
+  const ref = await request('/git/ref/heads/' + BRANCH);
+  if (ref.object.sha !== state.head) throw new Error('Nhánh main đã thay đổi. Hãy nạp lại và kiểm tra lần nữa.');
+  const previousTree = await request('/git/trees/' + commitSha + '?recursive=1');
+  if (previousTree.truncated) throw new Error('Không thể đọc đầy đủ cây file của bản cũ.');
+  const oldManifestFile = await request('/contents/' + MANIFEST_PATH + '?ref=' + commitSha);
+  const oldManifestBytes = Uint8Array.from(
+    atob(oldManifestFile.content.replace(/\s/g, '')), c => c.charCodeAt(0));
+  const previousManifest = validateManifest(JSON.parse(new TextDecoder().decode(oldManifestBytes)));
+  const pathRegex = /^public\/assets\/cards\/([a-z0-9_]+)\/([a-zA-Z0-9][a-zA-Z0-9._-]*\.(?:png|jpe?g|webp))$/i;
+  const desired = new Map();
+  for (const file of previousTree.tree) {
+    if (file.type !== 'blob' || !pathRegex.test(file.path)) continue;
+    desired.set(file.path, file.sha);
+  }
+  // Never recreate a manifest pointing at missing artwork.
+  for (const [type, entry] of Object.entries(previousManifest.cards)) {
+    const names = [...desired.keys()]
+      .filter(path => path.startsWith(CARD_PREFIX + type + '/'))
+      .map(path => path.slice((CARD_PREFIX + type + '/').length));
+    validateSlots(entry.slots, names);
+  }
+  const manifestEntry = previousTree.tree.find(item => item.path === MANIFEST_PATH && item.type === 'blob');
+  if (!manifestEntry) throw new Error('Bản cũ không có artwork manifest.');
+  const edits = buildArtworkRestoreEntries(state.original, desired, manifestEntry.sha);
+  const message = 'Khôi phục artwork từ ' + commitSha.slice(0, 8) +
+    '\nSẽ thay đổi ' + (edits.length - 1) + ' file ảnh và bảng phân bổ. ' +
+    'Không thay đổi code game. Thao tác sẽ commit trực tiếp lên main và có thể kích hoạt Netlify build.';
+  if (!window.confirm(message)) return;
+  // Check once more immediately before the Git ref update.
+  state.saving = true; updateSummary();
+  try {
+    const current = await request('/git/ref/heads/' + BRANCH);
+    if (current.object.sha !== state.head) throw new Error('Đã có commit mới trên main. Hủy khôi phục để tránh xung đột.');
+    notice('Đang tạo commit khôi phục artwork...');
+    const tree = await request('/git/trees', {
+      method: 'POST', body: { base_tree: state.baseTree, tree: edits }
+    });
+    const commit = await request('/git/commits', {
+      method: 'POST',
+      body: { message: 'revert(cards): Restore artwork from ' + commitSha.slice(0, 12),
+        tree: tree.sha, parents: [state.head] }
+    });
+    await request('/git/refs/heads/' + BRANCH, {
+      method: 'PATCH', body: { sha: commit.sha, force: false }
+    });
+    await loadRepo();
+    notice('Đã khôi phục thành công bằng commit ' + commit.sha.slice(0, 8) + '. Kiểm tra build game trên Netlify.');
+  } finally { state.saving = false; updateSummary(); }
+}
+
+async function showArtworkHistory() {
+  if (state.dirty.size) return notice('Hãy lưu hoặc bỏ bản nháp trước khi mở lịch sử khôi phục.', true);
+  const dialog = document.createElement('dialog');
+  dialog.className = 'save-review history-dialog';
+  dialog.setAttribute('aria-label', 'Lịch sử artwork');
+  dialog.append(node('h2', '', 'Lịch sử artwork'));
+  dialog.append(node('p', 'muted', 'Khôi phục ảnh và bảng phân bổ của một commit cũ; các phần khác của game không bị thay đổi.'));
+  const list = node('div', 'history-list');
+  list.append(node('p', 'muted', 'Đang nạp lịch sử từ GitHub...'));
+  dialog.append(list);
+  addButton(dialog, 'Đóng', () => dialog.close(), 'button outline');
+  document.body.append(dialog);
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.showModal();
+  try {
+    const history = await request('/commits?path=' + encodeURIComponent(MANIFEST_PATH) + '&per_page=20');
+    list.replaceChildren();
+    if (!history.length) list.append(node('p', 'muted', 'Chưa có commit artwork.'));
+    for (const commit of history) {
+      const row = node('div', 'history-row');
+      const info = node('div');
+      const date = commit.commit?.committer?.date?.slice(0, 10) || '';
+      info.append(node('strong', '', commit.sha.slice(0, 8) + ' · ' + date));
+      info.append(node('span', '', commit.commit?.message?.split('\n')[0] || 'Artwork update'));
+      row.append(info);
+      addButton(row, 'Khôi phục', async () => {
+        dialog.close();
+        try { await restoreArtworkCommit(commit.sha); }
+        catch (error) { notice(error.message, true); }
+      }, 'button secondary');
+      list.append(row);
+    }
+  } catch (error) { list.replaceChildren(node('p', 'muted', error.message)); }
+}
+addButton($('reload').parentElement, 'Lịch sử & khôi phục', showArtworkHistory, 'link-button');
+
 $('save').addEventListener('click', saveAll);
 window.addEventListener('pagehide', () => { state.token = ''; cleanupPreviews(); });
 loadRepo();

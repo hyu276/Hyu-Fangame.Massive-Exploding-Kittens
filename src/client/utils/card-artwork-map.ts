@@ -18,6 +18,6 @@ export function resolveArtworkTexture(
   const position = card.artworkSlot ?? card.index;
   if (!Number.isSafeInteger(position) || position < 0) return null;
   const filename = entry.slots[position % entry.slots.length];
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*\.(png|jpe?g|webp)$/.test(filename)) return null;
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*\.(png|jpe?g|webp)$/i.test(filename) || filename.includes('..')) return null;
   return `/assets/cards/${card.name}/${filename}?v=${encodeURIComponent(entry.revision)}`;
 }

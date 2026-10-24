@@ -149,3 +149,10 @@ input[type="number"] { appearance: textfield; }
 .review-entry img { width:100%; aspect-ratio:5/7; object-fit:cover; background:#29232a; border:1px solid #675d66; }
 .review-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:12px; position:sticky; bottom:-25px; padding:20px 0; background:#201d24; }
 @media(max-width:600px) { .save-review { padding:15px; } .review-entry { width:72px; } .review-actions .button { flex:1; } }
+
+.history-dialog { width:min(720px,calc(100% - 28px)); }
+.history-list { margin:18px 0; display:grid; gap:8px; max-height:56vh; overflow-y:auto; }
+.history-row { display:flex; flex-wrap:wrap; gap:15px; align-items:center; justify-content:space-between; border:1px solid #574b52; background:#2d252e; padding:12px; }
+.history-row strong { display:block; color:#f4d393; font-size:12px; margin-bottom:5px; }
+.history-row span { display:block; color:#bbb1ae; font-size:11px; overflow-wrap:anywhere; }
+.history-row .button { min-height:36px; font-size:11px; }

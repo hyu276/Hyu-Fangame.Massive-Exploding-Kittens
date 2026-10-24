@@ -28,3 +28,9 @@ test('reject malformed manifest names or visual slots', () => {
   assert.equal(resolveArtworkTexture({ name: 'attack', index: 0 },
     { cards: { attack: { slots: ['../bad.png'], revision: 'ok' } } }), null);
 });
+
+test('image filename extension may use uppercase while traversal is still rejected', () => {
+  const uppercase = { cards: { attack: { slots: ['CARD.PNG'], revision: 'test' } } };
+  assert.equal(resolveArtworkTexture({ name: 'attack', index: 0 }, uppercase),
+    '/assets/cards/attack/CARD.PNG?v=test');
+});

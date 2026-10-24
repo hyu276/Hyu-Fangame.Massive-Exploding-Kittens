@@ -43,3 +43,20 @@ node --test tests/card-studio.test.mjs
 ```
 
 Manual: enable Pages source only after approval, validate 6:4 distribution, upload/replace/rename/delete, conflict detection, token disconnect, successful GitHub commit, and subsequent Netlify **game** build. No Netlify publish of the editor.
+
+## Pre-merge acceptance: preview, repetition, restore and build
+
+- Before committing, the editor displays a review dialog with the exact artwork slots and added, replaced, deleted files. Canceling must write nothing.
+- The configurable slot count is the **visual cycle length**, not a promise about how many physical cards exist across game modes. The editor includes a separate physical-copy simulator: if a match creates more copies than the cycle length, slots repeat in the same order. For exactly six copies with frequencies 2/2/1/1, set six slots and verify the six-card preview.
+- For images configured in the manifest, the renderer and initial/idle preloader now resolve the same PNG, JPEG or WebP URL with a version query string. Unconfigured categories still use legacy 0.png fallback.
+- The **Lịch sử & khôi phục** control lists historical commits affecting the mapping. Restoring one creates a new commit on `main` that restores only card images and the mapping manifest, not other game source files. Restoration rejects dirty unsaved edits, invalid blob paths, missing referenced images or a changed main HEAD, and never forces branch updates.
+- After saving, the message confirms a GitHub commit only. Netlify build status is a separate deployment event; check the Netlify dashboard before declaring the game updated.
+- The editor remains exclusively on GitHub Pages; Netlify build must not contain an HTML editor or a redirect to it.
+
+## Required release checks
+
+1. GitHub Actions must pass ESLint, unit tests, frontend/server builds and server integration tests at the **latest PR head SHA**.
+2. Validate manual 6:4 assignment, random assignment, invalid sum, upload, replace, rename, deletion, simulated copy counts and review cancel path.
+3. Verify the restore diff cannot modify `index.html`, game runtime code, or paths outside `public/assets/cards/` and the mapping manifest.
+4. Inspect generated Netlify `dist/` for the studio files. The build gate fails on accidental inclusion.
+5. After merging, enable GitHub Pages under Settings → Pages using `main /docs`. Actual Pages hosting and authenticated writes cannot be demonstrated on an unmerged draft PR.

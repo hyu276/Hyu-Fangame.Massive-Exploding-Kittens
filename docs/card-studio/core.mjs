@@ -96,3 +96,21 @@ export function summarizeChanges(originalFiles, workingFiles, dirtyTypes) {
   }
   return changes;
 }
+
+/** Allow only artwork paths and a separately validated manifest blob in a restore commit. */
+export function buildArtworkRestoreEntries(current, historical, manifestSha) {
+  if (!(current instanceof Map) || !(historical instanceof Map) ||
+      !/^[0-9a-f]{40}$/i.test(manifestSha)) throw new Error('Git object không hợp lệ.');
+  const pathPattern = /^public\/assets\/cards\/([a-z0-9_]+)\/([a-zA-Z0-9][a-zA-Z0-9._-]*\.(png|jpe?g|webp))$/i;
+  for (const map of [current, historical]) for (const [path, sha] of map) {
+    if (!pathPattern.test(path) || !/^[0-9a-f]{40}$/i.test(sha))
+      throw new Error('Đường dẫn artwork hoặc SHA không hợp lệ.');
+  }
+  const entries = [];
+  for (const [path, sha] of historical)
+    if (current.get(path) !== sha) entries.push({ path, mode: '100644', type: 'blob', sha });
+  for (const path of current.keys())
+    if (!historical.has(path)) entries.push({ path, mode: '100644', type: 'blob', sha: null });
+  entries.push({ path: MANIFEST_PATH, mode: '100644', type: 'blob', sha: manifestSha });
+  return entries;
+}
