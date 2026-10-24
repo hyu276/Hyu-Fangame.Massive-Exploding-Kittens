@@ -104,7 +104,16 @@ test('defense cadence and spectator snapshots stay on their absolute deadlines',
           assert.deepEqual(shuffles, Array.from({ length: 10000 / interval }, (_, i) => (i + 1) * interval));
           assert.deepEqual(snapshots, [0, 3000, 6000, 9000, 10000]);
           assert.equal(f.defender.getState()!.G.handShuffleDefense, null);
-          assert.equal(handIDs(f.defender).length, 7, 'the theft executes after the last shuffle');
+          assert.equal(handIDs(f.defender).length, 8, 'defense stops before selecting a hidden slot');
+          assert.equal(f.human.getState()!.G.pendingCardSteal?.attackerId, '0');
+          assert.equal(f.human.getState()!.ctx.activePlayers?.['0'], S.STAGE_PICK_STOLEN_CARD);
+          const hiddenState = f.human.getState()!;
+          assert.equal(hiddenState.plugins.player.data.players['1'].hand.length, 0,
+            'attacker cannot inspect defender cards before choosing');
+          f.human.moves.pickCardToSteal(0);
+          await setImmediate();
+          assert.equal(handIDs(f.defender).length, 7, 'selection transfers a single card');
+          assert.equal(f.human.getState()!.G.pendingCardSteal, null);
         } finally { f.stop(); }
       });
     }
@@ -269,3 +278,48 @@ test('MCTSEvaluator dynamically prioritizes card play vs drawing based on rollou
   } finally { f.stop(); }
 });
 
+
+test('steal card selection rejects invalid slots and unassigned actors', async () => {
+  const f = await fixture('medium');
+  try {
+    f.human.moves.prepareDefense();
+    await setImmediate();
+    f.defender.moves.finishHandShuffleDefense();
+    await setImmediate();
+    assert.equal(f.human.getState()!.ctx.activePlayers?.['0'], S.STAGE_PICK_STOLEN_CARD);
+    const original = f.human.getState()!._stateID;
+    const logs = console.error;
+    console.error = () => {};
+    try {
+      f.human.moves.pickCardToSteal(-1);
+      f.human.moves.pickCardToSteal(999);
+      f.defender.moves.pickCardToSteal(0);
+      await setImmediate();
+      assert.equal(f.human.getState()!._stateID, original);
+    } finally {
+      console.error = logs;
+    }
+    f.human.moves.pickCardToSteal(0);
+    await setImmediate();
+    assert.equal(f.human.getState()!.G.pendingCardSteal, null);
+  } finally { f.stop(); }
+});
+
+test('bot picks a hidden slot without inspecting card identities', async () => {
+  const f = await fixture('hard');
+  try {
+    f.human.moves.prepareDefense();
+    await setImmediate();
+    f.defender.moves.finishHandShuffleDefense();
+    await setImmediate();
+    const state = structuredClone(f.human.getState()!);
+    state.ctx.activePlayers = { '1': S.STAGE_PICK_STOLEN_CARD };
+    state.G.pendingCardSteal = {
+      attackerId: '1', targetPlayerId: '0', cardsToSteal: 1,
+    };
+    state.isActive = true;
+    const move = new KittenBot('1', 'hard', () => .5).decide(state);
+    assert.equal(move?.move, 'pickCardToSteal');
+    assert.equal(move?.args.length, 1);
+  } finally { f.stop(); }
+});

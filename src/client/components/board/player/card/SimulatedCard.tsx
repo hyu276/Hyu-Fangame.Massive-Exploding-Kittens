@@ -1,4 +1,5 @@
 import React from 'react';
+import { configuredArtworkTypes } from '../../../../utils/card-artwork-map';
 import './SimulatedCard.css';
 import {
   getCardInfo,
@@ -196,7 +197,7 @@ export const SIMULATED_CARD_NAMES = new Set([
  */
 export function isCardSimulated(cardName: string | null | undefined): boolean {
   if (!cardName) return false;
-  return !REAL_IMAGE_CARD_NAMES.has(cardName);
+  return !REAL_IMAGE_CARD_NAMES.has(cardName) && !configuredArtworkTypes.has(cardName);
 }
 
 // Icon đại diện cho từng loại thẻ

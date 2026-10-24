@@ -18,6 +18,7 @@ import {TheGame} from "./entities/game";
 import {reorderFuture} from "./moves/alter-future-move";
 import {targetedAttack} from "./moves/targeted-attack-move";
 import {stealCard} from "./moves/steal-card-move";
+import {pickCardToSteal} from "./moves/pick-card-to-steal-move";
 import {markPlayer} from "./moves/mark-player-move";
 import {cursePlayer} from "./moves/curse-player-move";
 import {annoyPlayer} from "./moves/annoy-player-move";
@@ -62,6 +63,7 @@ import {
   STAGE_LOOK_AT_THE_BOTTOM,
   STAGE_DRAW_FROM_ANYWHERE,
   STAGE_HAND_SHUFFLE_DEFENSE,
+  STAGE_PICK_STOLEN_CARD,
   CHOOSE_PLAYER_FOR_ANNOY,
   VIEWING_FUTURE_1X,
   SEARCHING_DECK,
@@ -235,6 +237,7 @@ export const ExplodingKittens: Game<IGameState, IPluginAPIs> = {
     return {
       ...G,
       handShuffleDefense,
+      artworkSequence: undefined,
       lastDefuseInsertIndex: (G.lastDefuseInsertIndex !== undefined && G.lastDefuseInsertIndex !== null) ? -1 : undefined,
       buryingCard,
       digDeeperCard,
@@ -773,6 +776,11 @@ export const ExplodingKittens: Game<IGameState, IPluginAPIs> = {
               },
             },
           },
+          [STAGE_PICK_STOLEN_CARD]: {
+            moves: {
+              pickCardToSteal: { move: inGame(pickCardToSteal), redact: true },
+            },
+          },
           [STAGE_HAND_SHUFFLE_DEFENSE]: {
             moves: {
               swapHandCards: {
@@ -891,6 +899,7 @@ export const ExplodingKittens: Game<IGameState, IPluginAPIs> = {
         swapHandCards: inGame(swapHandCards),
         randomShuffleHand: inGame(randomShuffleHand),
         finishHandShuffleDefense: inGame(finishHandShuffleDefense),
+        pickCardToSteal: inGame(pickCardToSteal),
         annoyPlayer: inGame(annoyPlayer),
         pickSearchCard: inGame(pickSearchCard),
         blindPlayer: inGame(blindPlayer),
@@ -972,7 +981,7 @@ export const ExplodingKittens: Game<IGameState, IPluginAPIs> = {
 // Hidden-state moves must be resolved against the authoritative state, never a masked client deck.
 const privateMoves = new Set(['reorderFuture', 'defuseExplodingKitten', 'buryCard', 'giveCard',
   'giveGarbageCard', 'givePotluckCard', 'giveCardToFeedDead', 'giveCardForGraveRobber',
-  'pickSearchCard', 'swapHandCards', 'randomShuffleHand']);
+  'pickSearchCard', 'pickCardToSteal', 'swapHandCards', 'randomShuffleHand']);
 const playPhase = ExplodingKittens.phases!.play;
 for (const stage of Object.values(playPhase.turn!.stages!)) {
   stage.moves = { ...stage.moves, forfeit: { move: inGame(forfeit), client: false } };

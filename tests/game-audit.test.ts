@@ -289,3 +289,65 @@ test('malformed hand indices cannot corrupt or skip a defense', async () => {
     }
   } finally { f.stop(); }
 });
+
+test('two-card theft combo requires two authoritative picks and does not steal early', async () => {
+  let targetId = '';
+  const f = await fixture(game => {
+    safeCards(game, ['attack', 'skip', 'defuse']);
+    targetId = game.players.allPlayers.find(p => !p.isCurrentPlayer)!.id;
+    game.gameState.comboMultiplier = 2;
+    startHandShuffleDefense(game, game.players.currentPlayerId, targetId, 'steal');
+  });
+  try {
+    const attacker = f.current();
+    const defender = f.clients.find(c => c.playerID === targetId)!;
+    const attackerId = attacker.playerID!;
+    const beforeTarget = defender.getState()!.plugins.player.data.players[targetId].handSize;
+    const beforeAttacker = attacker.getState()!.plugins.player.data.players[attackerId].handSize;
+    assert.equal(attacker.getState()!.G.pendingCardSteal, null, 'no cards stolen during defense');
+    defender.moves.finishHandShuffleDefense();
+    await setImmediate();
+    assert.equal(attacker.getState()!.G.pendingCardSteal?.cardsToSteal, 2);
+    assert.equal(defender.getState()!.plugins.player.data.players[targetId].handSize, beforeTarget);
+    attacker.moves.pickCardToSteal(0);
+    await setImmediate();
+    assert.equal(attacker.getState()!.G.pendingCardSteal?.cardsToSteal, 1);
+    assert.equal(defender.getState()!.plugins.player.data.players[targetId].handSize, beforeTarget - 1);
+    attacker.moves.pickCardToSteal(0);
+    await setImmediate();
+    assert.equal(attacker.getState()!.G.pendingCardSteal, null);
+    assert.equal(defender.getState()!.plugins.player.data.players[targetId].handSize, beforeTarget - 2);
+    assert.equal(attacker.getState()!.plugins.player.data.players[attackerId].handSize, beforeAttacker + 2);
+  } finally { f.stop(); }
+});
+
+test('Tower of Power stash is exhausted before the target hand can be stolen', async () => {
+  let targetId = '';
+  const f = await fixture(game => {
+    safeCards(game, ['attack', 'skip', 'defuse']);
+    targetId = game.players.allPlayers.find(p => !p.isCurrentPlayer)!.id;
+    game.gameState.towerOfPowerCrownBearer = targetId;
+    game.gameState.towerOfPowerStash = [
+      { id: game.generateCardId(), name: 'skip', index: 0 },
+      { id: game.generateCardId(), name: 'attack', index: 0 },
+    ];
+    game.gameState.comboMultiplier = 2;
+    startHandShuffleDefense(game, game.players.currentPlayerId, targetId, 'steal');
+  });
+  try {
+    const attacker = f.current();
+    const defender = f.clients.find(c => c.playerID === targetId)!;
+    const before = defender.getState()!.plugins.player.data.players[targetId].handSize;
+    defender.moves.finishHandShuffleDefense();
+    await setImmediate();
+    assert.equal(attacker.getState()!.G.pendingCardSteal?.cardsToSteal, 2);
+    attacker.moves.pickCardToSteal(1);
+    await setImmediate();
+    assert.equal(attacker.getState()!.G.towerOfPowerStash?.length, 1);
+    attacker.moves.pickCardToSteal(0);
+    await setImmediate();
+    assert.equal(attacker.getState()!.G.pendingCardSteal, null);
+    assert.equal(attacker.getState()!.G.towerOfPowerCrownBearer, null);
+    assert.equal(defender.getState()!.plugins.player.data.players[targetId].handSize, before);
+  } finally { f.stop(); }
+});

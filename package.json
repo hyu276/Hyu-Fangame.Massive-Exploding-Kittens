@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/verify-editor-boundary.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "test:bots": "tsx --test tests/bots.test.ts tests/bot-improvements.test.ts",
-    "test": "tsx --test tests/bots.test.ts tests/bot-improvements.test.ts tests/game-audit.test.ts tests/game-modes.test.ts tests/game-mode-selection.test.ts tests/board-game.test.ts tests/now-cards.test.ts",
+    "test": "tsx --test tests/bots.test.ts tests/bot-improvements.test.ts tests/game-audit.test.ts tests/game-modes.test.ts tests/game-mode-selection.test.ts tests/board-game.test.ts tests/now-cards.test.ts tests/card-artwork.test.ts tests/card-studio.test.mjs",
     "test:server": "npm run build:server && tsx --test tests/server-audit.test.ts",
     "server": "npm run build:server && node dist/server/server/server.js",
     "server:dev": "tsx watch --include \"src/server/**/*.ts\" --include \"src/common/**/*.ts\" scripts/dev-server.ts",

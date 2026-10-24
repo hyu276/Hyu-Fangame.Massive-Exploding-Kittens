@@ -23,6 +23,7 @@ export const forfeit = (game: TheGame) => {
     if (player.isCurrentPlayer) {
       game.piles.pendingCard = null;
       game.gameState.handShuffleDefense = null;
+      game.gameState.pendingCardSteal = null;
       game.gameState.buryingCard = null;
       game.gameState.digDeeperCard = null;
       game.gameState.bottomCard = null;
@@ -34,7 +35,11 @@ export const forfeit = (game: TheGame) => {
       game.turnManager.endTurn();
       return;
     }
-    if (game.gameState.handShuffleDefense?.targetPlayerId === player.id) {
+    if (game.gameState.pendingCardSteal?.targetPlayerId === player.id ||
+        game.gameState.pendingCardSteal?.attackerId === player.id) {
+      game.gameState.pendingCardSteal = null;
+      game.turnManager.endStage();
+    } else if (game.gameState.handShuffleDefense?.targetPlayerId === player.id) {
       game.gameState.handShuffleDefense = null;
       game.turnManager.endStage();
     } else if (stage && stage !== IDLE_STAGE && stage !== S.RESPOND_WITH_NOW_CARD) {

@@ -27,6 +27,7 @@ import {
 } from '../../common';
 import {MatchPlayer} from "../utils/matchData.ts";
 import {PlayerID} from "boardgame.io";
+import { resolveArtworkTexture } from "../utils/card-artwork-map";
 const back = "/assets/cards/back/0.jpg";
 
 export class TheGameClient extends TheGame {
@@ -454,6 +455,8 @@ export class TheGameClient extends TheGame {
       search: 3,
       copycat: 1,
     };
+    const configured = resolveArtworkTexture(card);
+    if (configured) return configured;
     const maxCount = maxCounts[card.name];
     if (!maxCount) {
       // If card doesn't have local physical assets, safely fallback to card back

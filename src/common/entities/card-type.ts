@@ -18,7 +18,8 @@ export class CardType {
     return {
       id: game.generateCardId(),
       name: this.name,
-      index: index
+      index: index,
+      artworkSlot: game.nextArtworkSlot(this.name)
     };
   }
 

@@ -94,7 +94,8 @@ export class KittenBot {
       } else if (!['playCard', 'closeFutureView', 'requestCard', 'giveCard', 'stealCard',
         'targetedAttack', 'markPlayer', 'cursePlayer', 'annoyPlayer', 'blindPlayer',
         'discardPlayerCards', 'selectPlayerForIllTakeThat', 'swapHandCards',
-        'randomShuffleHand', 'publishHandShuffleSnapshot', 'finishHandShuffleDefense'].includes(type)) this.knownTop = [];
+        'randomShuffleHand', 'publishHandShuffleSnapshot', 'finishHandShuffleDefense',
+        'pickCardToSteal'].includes(type)) this.knownTop = [];
       if (type === 'finishHandShuffleDefense' && this.lastDefenseAction === 'buried_treasure') this.knownTop = [];
       if (type === 'playCard' && state.G.piles.discardPile.cards.slice(-1)[0]?.name === C.NAME_SHUFFLE_NOW) this.knownTop = [];
       if (type === 'playCard' && playerID === this.playerID) this.cardsPlayed++;
@@ -207,6 +208,18 @@ export class KittenBot {
         }
       }
       return null;
+    }
+
+    if (stage === S.STAGE_PICK_STOLEN_CARD) {
+      const pendingSteal = state.G.pendingCardSteal;
+      if (!pendingSteal || pendingSteal.attackerId !== this.playerID) return null;
+      const target = game.players.getPlayer(pendingSteal.targetPlayerId);
+      const stash = state.G.towerOfPowerCrownBearer === pendingSteal.targetPlayerId
+        ? state.G.towerOfPowerStash : undefined;
+      // Opponent card identities are secret; selection must not inspect their hand.
+      const slots = stash?.length || target.handSize;
+      return slots > 0 ? { ...action('pickCardToSteal', Math.floor(this.random() * slots)),
+        delay: 300 + Math.floor(this.random() * 301) } : null;
     }
 
     const targets = game.players.getValidCardActionTargets(self);

@@ -10,6 +10,7 @@ export class Card {
   public id: number;
   public name: string;
   public index: number;
+  public artworkSlot?: number;
   public isMarked?: boolean;
   public isFaceUp?: boolean;
   public isLocked?: boolean;
@@ -21,13 +22,14 @@ export class Card {
     this.id = _data.id;
     this.name = _data.name;
     this.index = _data.index;
+    this.artworkSlot = _data.artworkSlot;
     this.isMarked = _data.isMarked;
     this.isFaceUp = _data.isFaceUp;
     this.isLocked = _data.isLocked;
   }
 
   get data(): ICard {
-    return {id: this.id, name: this.name, index: this.index, isMarked: this.isMarked, isFaceUp: this.isFaceUp, isLocked: this.isLocked};
+    return {id: this.id, name: this.name, index: this.index, artworkSlot: this.artworkSlot, isMarked: this.isMarked, isFaceUp: this.isFaceUp, isLocked: this.isLocked};
   }
 
   setMarked(val: boolean = true) {
