@@ -64,3 +64,35 @@ export function validateManifest(data) {
   }
   return data;
 }
+
+/**
+ * The game allocates an independent artworkSlot for every physical copy it creates.
+ * Repeating the configured slots is intentional when a particular game mode uses
+ * more physical copies than the configured distribution cycle.
+ */
+export function expandArtworkSlots(slots, physicalCount) {
+  if (!Array.isArray(slots) || slots.length === 0 || !validSlotCount(physicalCount) ||
+      slots.some(name => !validFilename(name))) throw new Error('Chu kỳ artwork hoặc số lá không hợp lệ.');
+  return Array.from({ length: physicalCount }, (_, index) => slots[index % slots.length]);
+}
+
+export function summarizeChanges(originalFiles, workingFiles, dirtyTypes) {
+  const changes = [];
+  for (const type of dirtyTypes) {
+    if (!validType(type)) throw new Error('Loại bài không hợp lệ.');
+    const originals = new Map((originalFiles.get(type) || []).map(file => [file.name, file.sha]));
+    const current = workingFiles.get(type) || [];
+    const remaining = new Set();
+    for (const file of current) {
+      const previous = originals.get(file.name);
+      remaining.add(file.name);
+      if (!previous) changes.push({ type, file: file.name, kind: 'add' });
+      else if (file.bytes) changes.push({ type, file: file.name, kind: 'replace' });
+    }
+    for (const oldName of originals.keys()) {
+      if (!remaining.has(oldName)) changes.push({ type, file: oldName, kind: 'delete' });
+    }
+    changes.push({ type, kind: 'mapping' });
+  }
+  return changes;
+}

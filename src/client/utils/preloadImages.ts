@@ -1,3 +1,5 @@
+import { resolveArtworkTexture } from './card-artwork-map';
+
 /**
  * Cache Egress Optimization:
  * Thay vì tải trước ồ ạt 250+ lá bài (~215MB) ngay khi mở ứng dụng làm phình to Cache Egress,
@@ -51,8 +53,10 @@ export function preloadSingleImage(src: string): Promise<void> {
  */
 export const preloadCoreCardImages = (): Promise<void[]> => {
   const coreUrls = CORE_CARD_TYPES.map(type => {
-    const extension = type === 'back' ? 'jpg' : 'png';
-    return `/assets/cards/${type}/0.${extension}`;
+    if (type === 'back') return '/assets/cards/back/0.jpg';
+    // Use the same path and revision as the in-game renderer, including WebP/JPEG.
+    return resolveArtworkTexture({ name: type, index: 0, artworkSlot: 0 }) ??
+      `/assets/cards/${type}/0.png`;
   });
 
   return Promise.all(coreUrls.map(url => preloadSingleImage(url)));
@@ -70,7 +74,8 @@ export const preloadMatchCardImages = (cardNames: string[]): void => {
   idleCallback(() => {
     const uniqueCards = Array.from(new Set(cardNames));
     uniqueCards.slice(0, 15).forEach(cardName => {
-      const url = `/assets/cards/${cardName}/0.png`;
+      const url = resolveArtworkTexture({ name: cardName, index: 0, artworkSlot: 0 }) ??
+        `/assets/cards/${cardName}/0.png`;
       void preloadSingleImage(url);
     });
   });

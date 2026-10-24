@@ -1,6 +1,7 @@
 import {
   CARD_PREFIX, MANIFEST_PATH, validType, validFilename, validSlotCount,
-  validateSlots, distributeEvenly, distributeByCounts, validateImageBytes, validateManifest
+  validateSlots, distributeEvenly, distributeByCounts, validateImageBytes, validateManifest,
+  expandArtworkSlots, summarizeChanges
 } from './core.mjs';
 
 const OWNER = 'hyu276';
@@ -13,7 +14,7 @@ const $ = id => document.getElementById(id);
 const state = {
   token: '', head: '', baseTree: '', manifest: { schemaVersion: 1, cards: {} },
   original: new Map(), working: new Map(), slots: new Map(), desired: new Map(),
-  weights: new Map(), dirty: new Set(), selected: null, saving: false
+  weights: new Map(), samples: new Map(), dirty: new Set(), selected: null, saving: false
 };
 const previews = new Set();
 
@@ -91,6 +92,7 @@ async function loadRepo() {
     state.slots = new Map();
     state.desired = new Map();
     state.weights = new Map();
+    state.samples = new Map();
     state.dirty.clear();
     for (const item of tree.tree) {
       if (item.type !== 'blob') continue;
@@ -279,6 +281,43 @@ function renderCards() {
     row.append(select); grid.append(row);
   }
   panel.append(grid);
+  if (items.length && slots.length) {
+    const sample = node('section', 'sample-section');
+    sample.append(node('h3', '', 'Mô phỏng số lá thực tế'));
+    sample.append(node('p', 'muted',
+      'Mỗi chế độ chơi có thể tạo số bản sao khác nhau. Số ô trên chỉ là CHU KỲ artwork. Nếu số lá thực tế nhiều hơn, game lặp lại chu kỳ, không giữ nguyên tổng số lần hiển thị của từng ảnh.'));
+    const label = node('label', 'sample-label');
+    label.append(node('span', '', 'Số lá trong trận muốn kiểm tra'));
+    const input = document.createElement('input');
+    input.type = 'number'; input.min = '1'; input.max = '128'; input.step = '1';
+    const physicalCount = state.samples.get(type) || count;
+    input.value = String(physicalCount);
+    input.addEventListener('change', () => {
+      const n = Number(input.value);
+      if (!validSlotCount(n)) { notice('Số bản sao cần từ 1 đến 128.', true); input.value = String(physicalCount); return; }
+      state.samples.set(type, n); render();
+    });
+    label.append(input); sample.append(label);
+    const actual = expandArtworkSlots(slots, physicalCount);
+    const frequencies = Object.entries(actual.reduce((result, file) => {
+      result[file] = (result[file] || 0) + 1;
+      return result;
+    }, {}));
+    sample.append(node('p', 'sample-summary',
+      frequencies.map(([name, total]) => name + ': ' + total).join(' · ')));
+    const visual = node('div', 'sample-visual');
+    actual.forEach((file, index) => {
+      const tile = node('div', 'sample-tile');
+      const image = document.createElement('img');
+      const item = items.find(item => item.name === file);
+      image.src = item ? imageUrl(type, item) : '';
+      image.alt = 'Bản sao ' + (index + 1) + ': ' + file;
+      image.loading = 'lazy';
+      tile.append(image, node('span', '', '#' + (index + 1)));
+      visual.append(tile);
+    });
+    sample.append(visual); panel.append(sample);
+  }
   $('weightStatus').textContent = 'Tổng đang áp dụng: ' + slots.length + '/' + count;
 }
 function render() { renderTypes(); renderCards(); updateSummary(); }
@@ -352,6 +391,62 @@ function bytesToBase64(bytes) {
   }
   return btoa(chunks.join(''));
 }
+function originalByType() {
+  const previous = new Map();
+  for (const [path, sha] of state.original) {
+    const match = /^public\/assets\/cards\/([a-z0-9_]+)\/(.+)$/.exec(path);
+    if (!match) continue;
+    if (!previous.has(match[1])) previous.set(match[1], []);
+    previous.get(match[1]).push({ name: match[2], sha });
+  }
+  return previous;
+}
+
+/** Explicit, reviewable commit gate, with accurate filenames and all selected slots. */
+async function reviewBeforeCommit() {
+  const dialog = document.createElement('dialog');
+  dialog.className = 'save-review';
+  dialog.setAttribute('aria-label', 'Xem trước commit artwork');
+  const heading = node('h2', '', 'Xem trước thay đổi trước khi commit');
+  const warning = node('p', 'review-warning',
+    'Nhánh đích: main. Nhấn xác nhận sẽ ghi trực tiếp vào repository và có thể kích hoạt Netlify build lại GAME.');
+  dialog.append(heading, warning);
+  const changes = summarizeChanges(originalByType(), state.working, state.dirty);
+  const changeList = node('ul', 'review-change-list');
+  const kindLabel = { add: 'Thêm ảnh', replace: 'Thay ảnh', delete: 'Xóa ảnh', mapping: 'Cập nhật phân bổ' };
+  for (const change of changes) {
+    changeList.append(node('li', '', (kindLabel[change.kind] || change.kind) +
+      ': ' + change.type + (change.file ? '/' + change.file : '')));
+  }
+  dialog.append(changeList);
+  for (const type of state.dirty) {
+    const cardList = node('section', 'review-slots');
+    const assigned = slotsOf(type);
+    cardList.append(node('h3', '', type + ' · ' + assigned.length + ' vị trí'));
+    const grid = node('div', 'review-grid');
+    assigned.forEach((name, index) => {
+      const item = filesOf(type).find(file => file.name === name);
+      const entry = node('div', 'review-entry');
+      const image = document.createElement('img');
+      image.src = item ? imageUrl(type, item) : '';
+      image.alt = name; image.loading = 'lazy';
+      entry.append(image, node('span', '', '#' + (index + 1) + ' ' + name));
+      grid.append(entry);
+    });
+    cardList.append(grid); dialog.append(cardList);
+  }
+  const footer = node('div', 'review-actions');
+  addButton(footer, 'Quay lại chỉnh sửa', () => dialog.close('cancel'), 'button outline');
+  addButton(footer, 'Xác nhận commit lên main', () => dialog.close('confirm'), 'button gold');
+  dialog.append(footer); document.body.append(dialog);
+  try {
+    return await new Promise(resolve => {
+      dialog.addEventListener('close', () => resolve(dialog.returnValue === 'confirm'), { once: true });
+      dialog.showModal();
+    });
+  } finally { dialog.remove(); }
+}
+
 async function saveAll() {
   if (!state.token || !state.dirty.size || state.saving) return;
   try {
@@ -363,7 +458,7 @@ async function saveAll() {
         throw new Error(type + ': số ô bài chưa khớp số lá cần phân bổ.');
     }
   } catch (error) { return notice(error.message, true); }
-  if (!window.confirm('Ghi ảnh và bảng phân bổ vào NHÁNH MAIN?\nViệc này có thể kích hoạt Netlify build của game. Editor GitHub Pages sẽ không được đưa lên Netlify.')) return;
+  if (!await reviewBeforeCommit()) return;
   state.saving = true; updateSummary();
   try {
     notice('Đang kiểm tra HEAD trên GitHub...');

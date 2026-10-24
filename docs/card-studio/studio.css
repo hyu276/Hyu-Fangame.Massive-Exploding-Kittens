@@ -127,3 +127,25 @@ input[type="number"] { appearance: textfield; }
   .legend { display: none; }
 }
 @media(prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+
+/* Explicit pre-commit review and realistic physical-copy simulation */
+.sample-section { margin-top: 30px; border: 1px solid #6a5540; background: #1a171c; padding: 20px; }
+.sample-section h3 { color: #ffd074; margin: 0 0 10px; font-size: 15px; }
+.sample-section .muted { max-width: 900px; }
+.sample-label { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:15px 0; font-size:12px; }
+.sample-label input { width:84px; color:#ffd074; }
+.sample-summary { color:#f6d8a7; font-size:12px; overflow-wrap:anywhere; }
+.sample-visual,.review-grid { display:flex; gap:10px; flex-wrap:wrap; }
+.sample-tile { display:grid; gap:4px; width:62px; text-align:center; color:#e8d2a1; font-size:11px; }
+.sample-tile img { aspect-ratio:5/7; width:100%; object-fit:cover; background:#383039; border:1px solid #6a5962; }
+.save-review { width:min(840px,calc(100% - 28px)); max-height:min(90vh,900px); padding:25px; overflow:auto; color:#f5ecda; border:2px solid #d8a34e; background:#201d24; box-shadow:0 20px 70px #000c; }
+.save-review::backdrop { background:rgba(9,7,13,.86); }
+.save-review h2 { font:clamp(22px,4vw,34px) Impact, sans-serif; text-transform:uppercase; color:#f3b84c; margin:0 0 8px; }
+.review-warning { line-height:1.6; color:#ecd2b3; background:#49301c; padding:12px; font-size:13px; }
+.review-change-list { max-height:155px; overflow-y:auto; font-size:12px; line-height:1.8; }
+.review-slots { border-top:1px solid #625361; padding-top:15px; margin-top:20px; }
+.review-slots h3 { font-size:13px; text-transform:uppercase; color:#d9be92; }
+.review-entry { width:105px; display:grid; gap:4px; font-size:10px; overflow-wrap:anywhere; }
+.review-entry img { width:100%; aspect-ratio:5/7; object-fit:cover; background:#29232a; border:1px solid #675d66; }
+.review-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:12px; position:sticky; bottom:-25px; padding:20px 0; background:#201d24; }
+@media(max-width:600px) { .save-review { padding:15px; } .review-entry { width:72px; } .review-actions .button { flex:1; } }

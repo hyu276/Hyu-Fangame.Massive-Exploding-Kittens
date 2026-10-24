@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  distributeByCounts, distributeEvenly, validFilename, validType,
+  distributeByCounts, distributeEvenly, expandArtworkSlots, summarizeChanges, validFilename, validType,
   validateSlots, validateImageBytes, validateManifest
 } from '../docs/card-studio/core.mjs';
 
@@ -49,4 +49,25 @@ test('validate manifest structure and cache-busting revisions', () => {
   assert.throws(() => validateManifest({ schemaVersion: 1, cards: {
     attack: { slots: ['../bad.png'], revision: 'safe' }
   } }));
+});
+
+test('the physical-copy preview repeats the configured six-position cycle without missing images', () => {
+  const slots = ['a.png', 'a.png', 'b.png', 'b.png', 'c.png', 'd.png'];
+  assert.deepEqual(expandArtworkSlots(slots, 6), slots);
+  const actual = expandArtworkSlots(slots, 10);
+  assert.equal(actual.length, 10);
+  assert.deepEqual(actual.slice(6), slots.slice(0, 4));
+  assert.throws(() => expandArtworkSlots(slots, 0), /không hợp lệ/);
+});
+
+test('pre-commit review identifies added, changed, removed assets and allocation updates', () => {
+  const old = new Map([['attack', [
+    { name: 'a.png', sha: 'sha-a' }, { name: 'b.png', sha: 'sha-b' },
+  ]]]);
+  const next = new Map([['attack', [
+    { name: 'a.png', sha: 'sha-a', bytes: new Uint8Array([1]) },
+    { name: 'c.webp', bytes: new Uint8Array([2]) },
+  ]]]);
+  const changed = summarizeChanges(old, next, new Set(['attack']));
+  assert.deepEqual(changed.map(item => item.kind).sort(), ['add', 'delete', 'mapping', 'replace']);
 });
