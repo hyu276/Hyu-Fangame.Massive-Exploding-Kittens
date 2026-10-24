@@ -25,33 +25,31 @@
 }
 
 .lobby-title {
-  font-family: "Oswald", "Be Vietnam Pro", sans-serif;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  font-size: clamp(2rem, 4.9vw, 3.8rem);
   font-weight: 900;
-  color: var(--color-accent);
-  text-shadow: 4px 4px 0 var(--color-primary),
-               8px 8px 0 var(--color-primary-muted),
-               0 0 40px var(--color-accent-glow-medium),
-               0 0 80px var(--color-accent-glow-light);
-  letter-spacing: 3px;
+  line-height: 1.28;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+  color: #ffd04f;
+  text-shadow: 0 3px 0 #8a1729, 0 8px 26px rgba(85, 10, 24, .45);
   text-transform: uppercase;
-  background: linear-gradient(180deg, var(--color-accent-light) 0%, var(--color-accent) 50%, #FF8C00 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
   text-align: center;
-  filter: drop-shadow(4px 4px 0 var(--color-primary)) drop-shadow(0 0 40px var(--color-accent-glow-light));
+  margin: 0;
+  padding: 0 .25rem .15rem;
+  overflow-wrap: break-word;
 }
-
 .lobby-subtitle {
-  font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 1.4rem;
+  font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  font-size: clamp(1rem, 1.85vw, 1.25rem);
   font-weight: 600;
+  line-height: 1.7;
+  letter-spacing: .005em;
   color: var(--color-text-light);
-  text-shadow: 2px 2px 4px var(--color-shadow-dark),
-               0 0 20px var(--color-accent-glow-light);
-  letter-spacing: 1px;
+  text-align: center;
+  text-shadow: 0 2px 5px rgba(53, 7, 18, .38);
+  max-width: 65ch;
+  margin: 0 auto;
 }
 
 /* Main Content */
@@ -504,4 +502,32 @@
 .lobby-container .lobby-player-label,
 .lobby-container .lobby-player-name {
   font-family: "Be Vietnam Pro", sans-serif;
+}
+
+/* A consistent Vietnamese-capable font for lobby controls; avoid Oswald's 700-weight ceiling. */
+.lobby-container .lobby-top-bar .btn,
+.lobby-container .lobby-player-profile,
+.lobby-container .lobby-header,
+.lobby-container .lobby-footer {
+  font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+}
+.lobby-container .lobby-top-bar .btn {
+  letter-spacing: .005em;
+  line-height: 1.45;
+  font-weight: 800;
+  text-shadow: none;
+}
+.lobby-container .lobby-top-bar .btn-large {
+  font-size: clamp(1rem, 1.55vw, 1.16rem);
+  padding: .95rem clamp(1rem, 2.5vw, 2rem);
+  min-height: 62px;
+}
+.lobby-footer { flex-wrap: wrap; }
+@media (max-width: 768px) {
+  .lobby-title { font-size: clamp(1.8rem, 6.3vw, 2.65rem); letter-spacing: -.025em; }
+  .lobby-subtitle { font-size: clamp(.9rem, 3vw, 1.08rem); }
+}
+@media (max-width: 420px) {
+  .lobby-title { font-size: clamp(1.5rem, 6.1vw, 2.1rem); }
+  .lobby-header { gap: .7rem; }
 }
