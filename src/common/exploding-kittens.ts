@@ -237,6 +237,7 @@ export const ExplodingKittens: Game<IGameState, IPluginAPIs> = {
     return {
       ...G,
       handShuffleDefense,
+      artworkSequence: undefined,
       lastDefuseInsertIndex: (G.lastDefuseInsertIndex !== undefined && G.lastDefuseInsertIndex !== null) ? -1 : undefined,
       buryingCard,
       digDeeperCard,
