@@ -1,7 +1,8 @@
 import {
   CARD_PREFIX, MANIFEST_PATH, validType, validFilename, validSlotCount,
   validateSlots, distributeEvenly, distributeByCounts, validateImageBytes, validateManifest,
-  expandArtworkSlots, summarizeChanges, buildArtworkRestoreEntries
+  expandArtworkSlots, summarizeChanges, buildArtworkRestoreEntries,
+  extractRegisteredCardTypes, buildArtworkCatalog, filterArtworkCatalog
 } from './core.mjs';
 
 const OWNER = 'hyu276';
@@ -14,7 +15,8 @@ const $ = id => document.getElementById(id);
 const state = {
   token: '', head: '', baseTree: '', manifest: { schemaVersion: 1, cards: {} },
   original: new Map(), working: new Map(), slots: new Map(), desired: new Map(),
-  weights: new Map(), samples: new Map(), dirty: new Set(), selected: null, saving: false
+  weights: new Map(), samples: new Map(), dirty: new Set(), selected: null,
+  registeredCardTypes: [], filter: 'all', saving: false
 };
 const previews = new Set();
 
@@ -83,7 +85,20 @@ async function loadRepo() {
       if (error.message.includes('404')) manifest = { schemaVersion: 1, cards: {} };
       else throw error;
     }
+    // Read authoritative game card names so types with no image folder are visible.
+    // Both files are pinned to the same commit as the art tree.
+    const sourcePaths = [
+      'src/common/constants/cards.ts',
+      'src/common/registries/card-registry.ts'
+    ];
+    const sources = await Promise.all(sourcePaths.map(async path => {
+      const result = await request('/contents/' + path + '?ref=' + encodeURIComponent(head));
+      const decoded = atob(result.content.replace(/\s/g, ''));
+      return new TextDecoder().decode(Uint8Array.from(decoded, char => char.charCodeAt(0)));
+    }));
+    const registeredCardTypes = extractRegisteredCardTypes(...sources);
     cleanupPreviews();
+    state.registeredCardTypes = registeredCardTypes;
     state.head = head;
     state.baseTree = tree.sha;
     state.manifest = manifest;
@@ -103,7 +118,8 @@ async function loadRepo() {
       if (!state.working.has(type)) state.working.set(type, []);
       state.working.get(type).push({ name: filename, originalName: filename, sha: item.sha });
     }
-    for (const type of Object.keys(manifest.cards)) {
+    // The registry is the source of truth, including cards with zero artworks.
+    for (const type of [...registeredCardTypes, ...Object.keys(manifest.cards)]) {
       if (!state.working.has(type)) state.working.set(type, []);
     }
     for (const [type, items] of state.working) {
@@ -126,26 +142,51 @@ function updateSummary() {
   $('connection').textContent = state.token ? 'Đã nhập token' : 'Chế độ xem';
   $('connection').dataset.connected = state.token ? 'true' : 'false';
 }
+function artworkCatalog() {
+  // Draft allocations are authoritative while an image change is still unsaved.
+  const cards = { ...state.manifest.cards };
+  for (const type of state.dirty) cards[type] = { slots: slotsOf(type) };
+  return buildArtworkCatalog(state.registeredCardTypes, state.working, { cards });
+}
 function renderTypes() {
   const list = $('typeList');
   list.replaceChildren();
-  const term = $('search').value.trim().toLowerCase();
-  for (const type of [...state.working.keys()].sort()) {
-    if (!type.includes(term)) continue;
-    const count = filesOf(type).length;
-    const selected = type === state.selected;
-    const button = node('button', 'type-item' + (selected ? ' active' : ''));
+  const catalog = artworkCatalog();
+  const missing = catalog.filter(item => item.missing).length;
+  $('countAll').textContent = String(catalog.length);
+  $('countMissing').textContent = String(missing);
+  $('countAvailable').textContent = String(catalog.length - missing);
+  for (const [filter, id] of [['all', 'filterAll'], ['missing', 'filterMissing'], ['available', 'filterAvailable']]) {
+    const button = $(id);
+    const active = state.filter === filter;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+  }
+  const filtered = filterArtworkCatalog(catalog, $('search').value, state.filter);
+  for (const item of filtered) {
+    const selected = item.name === state.selected;
+    const button = node('button', 'type-item' + (selected ? ' active' : '') +
+      (item.missing ? ' type-item-missing' : ''));
     button.type = 'button';
-    button.append(node('strong', '', type.replaceAll('_', ' ')));
-    button.append(node('span', '', count + ' artwork · ' + (state.desired.get(type) || 0) + ' ô'));
-    if (state.dirty.has(type)) button.append(node('i', '', '●'));
+    const label = node('strong', '', item.name.replaceAll('_', ' '));
+    const count = node('span', 'type-meta', item.missing
+      ? (item.count ? item.count + ' ảnh · Ánh xạ thiếu ảnh' : 'CHƯA CÓ ARTWORK')
+      : item.count + ' artwork · ' + (state.desired.get(item.name) || 0) + ' ô');
+    button.append(label, count);
+    if (item.missing) button.append(node('span', 'missing-marker', 'CẦN ẢNH'));
+    if (state.dirty.has(item.name)) button.append(node('i', '', '●'));
     button.addEventListener('click', () => {
-      state.selected = type; render();
+      state.selected = item.name; render();
     });
     list.append(button);
   }
-  if (!list.childElementCount) list.append(node('p', 'muted', 'Không có loại bài phù hợp.'));
+  if (!filtered.length) {
+    list.append(node('p', 'catalog-empty',
+      state.filter === 'missing' ? 'Không có loại bài nào thiếu artwork trong phạm vi lọc.'
+        : 'Không có loại bài phù hợp với bộ lọc.'));
+  }
 }
+
 function renderCards() {
   const type = state.selected;
   const panel = $('workspace');
@@ -537,6 +578,14 @@ $('reload').addEventListener('click', async () => {
   await loadRepo();
 });
 $('search').addEventListener('input', renderTypes);
+for (const [id, filter] of [['filterAll', 'all'], ['filterMissing', 'missing'], ['filterAvailable', 'available']]) {
+  $(id).addEventListener('click', () => {
+    state.filter = filter;
+    const filtered = filterArtworkCatalog(artworkCatalog(), $('search').value, filter);
+    if (!filtered.some(item => item.name === state.selected)) state.selected = filtered[0]?.name || null;
+    render();
+  });
+}
 $('newType').addEventListener('click', () => {
   const name = $('newTypeName').value.trim().toLowerCase();
   if (!validType(name)) return notice('Tên loại bài chỉ gồm a-z, số, dấu gạch dưới.', true);
@@ -545,7 +594,10 @@ $('newType').addEventListener('click', () => {
     state.slots.set(name, []);
     state.desired.set(name, 1);
   }
-  state.selected = name; $('newTypeName').value = ''; render();
+  state.selected = name;
+  state.filter = 'all';
+  $('search').value = '';
+  $('newTypeName').value = ''; render();
 });
 
 /**

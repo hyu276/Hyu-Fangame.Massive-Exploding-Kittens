@@ -4,9 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data: https://raw.githubusercontent.com; connect-src 'self' https://api.github.com; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; img-src 'self' blob: data: https://raw.githubusercontent.com; connect-src 'self' https://api.github.com; font-src 'self' https://fonts.gstatic.com; base-uri 'none'; form-action 'none'; object-src 'none'">
   <title>Card Artwork Studio | Massive Exploding Kittens</title>
   <meta name="description" content="Biên tập bộ ảnh và tần suất xuất hiện của card trong Massive Exploding Kittens qua GitHub.">
+  <!-- Be Vietnam Pro includes dedicated Vietnamese diacritics and 400–900 weights. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap">
   <link rel="stylesheet" href="./studio.css">
   <script type="module" src="./app.js"></script>
 </head>
@@ -17,7 +19,7 @@
       <div><div class="brand-kicker">MASSIVE EXPLODING KITTENS / TOOLS</div>
         <h1>Card <em>Artwork</em> Studio<span class="brand-dot">.</span></h1></div>
     </div>
-    <a class="external" href="https://github.com/hyu276/Hyu-Fangame.Massive-Exploding-Kittens/pull/1" rel="noopener noreferrer" target="_blank">Mã nguồn / PR #1 ↗</a>
+    <a class="external" href="https://github.com/hyu276/Hyu-Fangame.Massive-Exploding-Kittens" rel="noopener noreferrer" target="_blank">Mã nguồn ↗</a>
   </header>
 
   <main>
@@ -57,6 +59,12 @@
         <div class="catalog-top"><div class="eyebrow">DANH MỤC BÀI</div><h2>Thư viện</h2></div>
         <label class="search-label" for="search">TÌM LOẠI BÀI</label>
         <input id="search" type="search" placeholder="Ví dụ: exploding_kitten">
+        <div class="catalog-filters" role="group" aria-label="Lọc card theo trạng thái artwork">
+          <button id="filterAll" type="button" class="filter-option is-active" aria-pressed="true">Tất cả <span id="countAll" class="filter-count">0</span></button>
+          <button id="filterMissing" type="button" class="filter-option" aria-pressed="false">Chưa có artwork <span id="countMissing" class="filter-count">0</span></button>
+          <button id="filterAvailable" type="button" class="filter-option" aria-pressed="false">Đã có ảnh <span id="countAvailable" class="filter-count">0</span></button>
+        </div>
+        <p class="catalog-hint">Danh sách bao gồm cả những loại bài trong game chưa có thư mục ảnh.</p>
         <nav id="typeList" class="type-list" aria-label="Các loại bài"></nav>
         <div class="add-category">
           <label class="search-label" for="newTypeName">THÊM LOẠI BÀI</label>

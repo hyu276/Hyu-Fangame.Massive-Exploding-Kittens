@@ -114,3 +114,54 @@ export function buildArtworkRestoreEntries(current, historical, manifestSha) {
   entries.push({ path: MANIFEST_PATH, mode: '100644', type: 'blob', sha: manifestSha });
   return entries;
 }
+
+/**
+ * Discover playable card types from the registry, not just from image directories.
+ * The constants are checked against the exact card registry read from the same
+ * GitHub revision, so missing art folders never silently disappear from the UI.
+ */
+export function extractRegisteredCardTypes(constantsSource, registrySource) {
+  if (typeof constantsSource !== 'string' || typeof registrySource !== 'string') {
+    throw new Error('Không thể đọc danh sách loại bài từ mã nguồn game.');
+  }
+  const declarations = new Map(
+    [...constantsSource.matchAll(/\b(NAME_[A-Z0-9_]+)\s*=\s*['"]([a-z0-9_]+)['"]/g)]
+      .map(match => [match[1], match[2]])
+  );
+  const registrations = [...registrySource.matchAll(
+    /\bregister\s*\(\s*new\s+[A-Za-z_$][\w$]*\s*\(\s*(NAME_[A-Z0-9_]+)/g
+  )].map(match => match[1]);
+  if (!registrations.length) throw new Error('Không tìm thấy card registry hợp lệ.');
+  const names = registrations.map(constant => {
+    const name = declarations.get(constant);
+    if (!name || !validType(name)) throw new Error('Không xác định được card: ' + constant);
+    return name;
+  });
+  return [...new Set(names)].sort((a, b) => a.localeCompare(b));
+}
+
+export function buildArtworkCatalog(registeredTypes, working, manifest = { cards: {} }) {
+  if (!Array.isArray(registeredTypes) || !(working instanceof Map)) {
+    throw new Error('Dữ liệu danh mục card không hợp lệ.');
+  }
+  const knownTypes = new Set(registeredTypes);
+  const allTypes = new Set([...knownTypes, ...working.keys(), ...Object.keys(manifest.cards || {})]);
+  return [...allTypes].sort((a, b) => a.localeCompare(b)).map(name => {
+    if (!validType(name)) throw new Error('Tên loại card không hợp lệ.');
+    const images = (working.get(name) || []).map(file => file.name).filter(validFilename);
+    const slots = manifest.cards?.[name]?.slots;
+    // A broken mapping counts as missing artwork, even when a folder exists.
+    const missing = images.length === 0 ||
+      (Array.isArray(slots) && slots.some(filename => !images.includes(filename)));
+    return { name, count: images.length, missing, registered: knownTypes.has(name) };
+  });
+}
+
+export function filterArtworkCatalog(catalog, query = '', mode = 'all') {
+  if (!['all', 'missing', 'available'].includes(mode)) throw new Error('Bộ lọc không hợp lệ.');
+  const q = String(query).trim().toLocaleLowerCase('vi');
+  return catalog.filter(item =>
+    (!q || item.name.replaceAll('_', ' ').toLocaleLowerCase('vi').includes(q) ||
+      item.name.toLocaleLowerCase('vi').includes(q)) &&
+    (mode === 'all' || (mode === 'missing' ? item.missing : !item.missing)));
+}

@@ -60,3 +60,20 @@ Manual: enable Pages source only after approval, validate 6:4 distribution, uplo
 3. Verify the restore diff cannot modify `index.html`, game runtime code, or paths outside `public/assets/cards/` and the mapping manifest.
 4. Inspect generated Netlify `dist/` for the studio files. The build gate fails on accidental inclusion.
 5. After merging, enable GitHub Pages under Settings → Pages using `main /docs`. Actual Pages hosting and authenticated writes cannot be demonstrated on an unmerged draft PR.
+
+## Vietnamese type and missing artwork filter
+
+The editor uses **Be Vietnam Pro** (Vietnamese glyph coverage, 400–900 weights) on headings, controls and catalog labels with Segoe UI/system-ui fallback. It loads only a stylesheet from `fonts.googleapis.com` and font data from `fonts.gstatic.com` under the editor's restrictive CSP. It never loads third-party JavaScript or sends GitHub tokens to font hosts.
+
+The catalog is built from the **actual registered game card types** in:
+- `src/common/constants/cards.ts`
+- `src/common/registries/card-registry.ts`
+
+Both files are read using the GitHub Contents API at the same `main` HEAD as the artwork tree. Thus cards with no image directory still appear, and a new registered card can be found immediately without regenerating a static list.
+
+- **Tất cả:** registered card types, plus image-only categories such as `back`.
+- **Chưa có artwork:** registered card types with no valid PNG/JPEG/WebP image in `public/assets/cards/<type>/`, or a manifest referencing missing files. Choose the card and press **Tải artwork** to add its first image.
+- **Đã có ảnh:** types with available artwork and no broken configured filename.
+- The search box combines with the filter. Counts update on reload and as local image edits are made. Missing card types can be selected before any files exist.
+
+**Deployment prohibition:** The Card Artwork Studio is **GitHub Pages only**. Never serve any part of the editor in Netlify production, branch deploys or preview deployments. The game, card images and game art manifest still build to Netlify from Vite `dist/`. The Netlify boundary script inspects the output for editor signatures in addition to forbidding editor directories. See `AGENTS.md` section 7.

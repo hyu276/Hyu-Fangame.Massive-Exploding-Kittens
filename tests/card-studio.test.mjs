@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   distributeByCounts, distributeEvenly, expandArtworkSlots, summarizeChanges, buildArtworkRestoreEntries, validFilename, validType,
+  extractRegisteredCardTypes, buildArtworkCatalog, filterArtworkCatalog,
   validateSlots, validateImageBytes, validateManifest
 } from '../docs/card-studio/core.mjs';
 
@@ -93,4 +96,64 @@ test('restore commit can only replace card artwork blobs and the manifest', () =
   assert.throws(() => buildArtworkRestoreEntries(old, new Map([
     ['public/other/index.html', 'f'.repeat(40)],
   ]), 'e'.repeat(40)), /không hợp lệ/);
+});
+
+test('registry discovery finds playable types without any asset directory', () => {
+  const constants = readFileSync('src/common/constants/cards.ts', 'utf8');
+  const registry = readFileSync('src/common/registries/card-registry.ts', 'utf8');
+  const names = extractRegisteredCardTypes(constants, registry);
+  assert.ok(names.length >= 80, 'expect all playable variants from the registry');
+  assert.ok(names.includes('godcat'));
+  assert.ok(names.includes('attack'));
+  assert.ok(names.includes('slap_3x'));
+  assert.equal(new Set(names).size, names.length);
+  assert.throws(() => extractRegisteredCardTypes(constants, 'unregistered source'), /registry/);
+});
+
+test('missing artwork filter includes registered types with no folder and works with search', () => {
+  const names = extractRegisteredCardTypes(
+    readFileSync('src/common/constants/cards.ts', 'utf8'),
+    readFileSync('src/common/registries/card-registry.ts', 'utf8')
+  );
+  const working = new Map();
+  for (const type of readdirSync('public/assets/cards')) {
+    const dir = join('public/assets/cards', type);
+    if (!validType(type)) continue;
+    const images = readdirSync(dir, { withFileTypes: true })
+      .filter(file => file.isFile() && validFilename(file.name))
+      .map(file => ({ name: file.name }));
+    if (images.length) working.set(type, images);
+  }
+  const catalog = buildArtworkCatalog(names, working);
+  const missing = filterArtworkCatalog(catalog, '', 'missing');
+  assert.ok(missing.length > 0);
+  assert.ok(missing.some(x => x.name === 'godcat' && x.count === 0));
+  assert.ok(!missing.some(x => x.name === 'attack'));
+  assert.equal(filterArtworkCatalog(catalog, 'GODCAT', 'missing').length, 1);
+  assert.ok(filterArtworkCatalog(catalog, '', 'available').some(x => x.name === 'attack'));
+  assert.equal(missing.every(x => x.missing), true);
+  assert.equal(filterArtworkCatalog(catalog, '', 'all').length, catalog.length);
+});
+
+test('catalog treats mapping to deleted artwork as missing, and supports brand-new category uploads', () => {
+  const working = new Map([['custom_card', []], ['attack', [{ name: '0.png' }]]]);
+  const catalog = buildArtworkCatalog(['attack', 'custom_card'], working, {
+    cards: { attack: { slots: ['missing.png'] } }
+  });
+  assert.equal(catalog.find(x => x.name === 'attack').missing, true);
+  assert.equal(catalog.find(x => x.name === 'custom_card').missing, true);
+  working.get('custom_card').push({ name: 'first.webp' });
+  const afterUpload = buildArtworkCatalog(['attack', 'custom_card'], working);
+  assert.equal(afterUpload.find(x => x.name === 'custom_card').missing, false);
+});
+
+test('admin typography covers Vietnamese labels without Impact glyph fallback', () => {
+  const css = readFileSync('docs/card-studio/studio.css', 'utf8');
+  const html = readFileSync('docs/card-studio/index.html', 'utf8');
+  assert.ok(!/\bImpact\b/.test(css));
+  assert.match(css, /Be Vietnam Pro/);
+  assert.match(html, /fonts.googleapis.com/);
+  assert.match(html, /fonts.gstatic.com/);
+  assert.match(html, /id="filterMissing"/);
+  assert.ok(existsSync('docs/.nojekyll'));
 });

@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const forbidden = [
   'public/card-studio', 'public/docs/card-studio',
@@ -15,4 +16,28 @@ if (!/publish\s*=\s*"dist"/.test(netlify)) {
 if (!existsSync('docs/card-studio/index.html')) {
   throw new Error('GitHub Pages editor must remain in docs/card-studio.');
 }
-console.log('Verified: editor is not in the Netlify publish directory.');
+// Catch accidental copy/rename/bundling of the editor into a game build,
+// not just its original directory name. Inspect text artifacts, never images.
+const studioMarkers = [
+  'Card Artwork Studio',
+  'MASSIVE EXPLODING KITTENS / TOOLS',
+  'id="filterMissing"',
+  'Fine-grained GitHub token',
+  'extractRegisteredCardTypes',
+];
+function assertNoStudioInOutput(directory) {
+  if (!existsSync(directory)) return;
+  for (const item of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, item.name);
+    if (item.isDirectory()) {
+      assertNoStudioInOutput(path);
+    } else if (item.isFile() && /\.(?:html|js|css)$/i.test(item.name)) {
+      const content = readFileSync(path, 'utf8');
+      const marker = studioMarkers.find(value => content.includes(value));
+      if (marker) throw new Error('GitHub Pages-only admin code found in Netlify output: ' + path +
+        ' (marker: ' + marker + ')');
+    }
+  }
+}
+assertNoStudioInOutput('dist');
+console.log('Verified: GitHub Pages-only Card Artwork Studio is absent from Netlify game build.');

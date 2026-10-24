@@ -184,6 +184,12 @@ Running the project requires two concurrent processes:
 
 ## 7. Card Artwork Studio: GitHub Pages ONLY, strict no-Netlify boundary
 
+**ABSOLUTE NON-DEPLOYMENT RULE (P0): Card Artwork Studio must NEVER be hosted, deployed, mirrored, proxied, built into, redirected into, or served from Netlify, including production, branch deploys, Deploy Previews, temporary staging sites, Edge Functions or Functions.** This prohibition applies to every human developer and AI agent working on this repository. It is not waived by a generic request to deploy the game, merge a pull request, or publish assets.
+
+**Approved origin:** `https://hyu276.github.io/Hyu-Fangame.Massive-Exploding-Kittens/card-studio/` via GitHub Pages only (`main` / `docs`). **Forbidden:** `https://massiveexplodingkittens.netlify.app/card-studio/` or any other Netlify-hosted version of the admin UI. Never add a GitHub-to-Netlify sync job or copy operation for `docs/card-studio/`.
+
+**Permitted exception:** Netlify may automatically rebuild the **game** after a `main` commit, including game artwork in `public/assets/cards/` and the artwork mapping imported into the Vite game. That is NOT permission to publish the admin editor UI.
+
 This is a mandatory deployment and architecture rule, not a preference.
 
 1. **Never deploy the Card Artwork Studio UI to Netlify under any circumstances.** The only authorized hosting surface for the editor is GitHub Pages at `docs/card-studio/` (project path: `/Hyu-Fangame.Massive-Exploding-Kittens/card-studio/`). Do not create Netlify redirect/rewrite rules for the editor, place it in `public/`, include it in the Vite client `dist/`, add it to Netlify Functions/Edge Functions or publish it from any Netlify site. Do not add "temporarily" exposed Netlify preview routes.
@@ -196,3 +202,12 @@ This is a mandatory deployment and architecture rule, not a preference.
 8. Never auto-merge a PR or change the hosting boundary without explicit owner authorization. Preserve editor functionality on GitHub Pages and game artwork on Netlify when updating infrastructure.
 
 The editor is a **public static page** and cannot protect against a compromised browser, malicious extensions, or another person controlling the served JavaScript. Least-privilege tokens and careful review are required. A new visual card category does not automatically create gameplay logic for a new card type.
+
+### 7.1 Mandatory verification on every change to the artwork studio
+
+- The editor remains in `docs/card-studio/` with GitHub Pages publishing `main /docs`. Netlify's publish directory must remain the Vite `dist/` game build.
+- Run `node scripts/verify-editor-boundary.mjs` as part of `npm run build`, reject any studio HTML/JS/CSS in the Netlify output, and never bypass or weaken that gate. This applies to Deploy Previews as well as production.
+- Use **Vietnamese-capable fonts for every Vietnamese heading and control**, including dense admin panels. Do not use Latin-only display fonts such as Impact for Vietnamese words; verify actual diacritics, font loading and fallback.
+- The editor's **Missing artwork** filter must be based on all card types registered in `src/common/registries/card-registry.ts` and constants in `src/common/constants/cards.ts`, not merely on existing `public/assets/cards/` directories. A registered type with no matching images must remain visible and must allow artwork uploads.
+- Do not embed a GitHub PAT, private access token, or admin credential in Google Fonts requests or anywhere other than the authenticated GitHub API request headers. Third-party JavaScript is prohibited; external fonts may use only explicitly allowed stylesheet/font origins and a no-referrer policy.
+- Verify accessible filter state (`aria-pressed`), accurate missing/available counters, filtering combined with search, empty-state messaging, and that normal artwork commits still target `main` without exposing the editor through Netlify.
